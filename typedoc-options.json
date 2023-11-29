@@ -1,0 +1,13 @@
+{
+    "entryPoints": [
+        "./src/sdk/*-sdk.ts"
+    ],  
+    "includes": "./inc/",
+    "exclude": "./sdk/lib/**/*",
+    "tsconfig": "./tsconfig.json",
+    "includeVersion": true,
+    "excludeExternals": true, 
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "out": "./docs"
+}
