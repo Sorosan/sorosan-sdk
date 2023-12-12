@@ -454,9 +454,9 @@ export class ContractSDK extends Soroban {
 
         try {
             const transaction = await bumpContractInstance(
-                txBuilder, 
-                this.server, 
-                contractAddress, 
+                txBuilder,
+                this.server,
+                contractAddress,
                 ledger.sequence + 10000,
                 this.publicKey);
 

@@ -1,10 +1,11 @@
-import { xdr } from 'stellar-sdk';
+import { Transaction, xdr } from 'stellar-sdk';
 import { NetworkDetails } from '../lib/network';
 import {
     accountToScVal,
     getContractAddress,
     getContractHash,
     isAddress,
+    isSorobanTransaction,
     mask
 } from '../lib/soroban';
 import { Soroban } from './soroban';
@@ -123,6 +124,10 @@ export class UtilSDK extends Soroban {
      */
     isContractAddress(val: string): boolean {
         return val[0] === 'C' && isAddress(val);
+    }
+
+    isSorobanTransaction(tx: Transaction): boolean {
+        return isSorobanTransaction(tx) || false;
     }
 }
 

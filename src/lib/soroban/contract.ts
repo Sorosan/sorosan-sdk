@@ -50,7 +50,7 @@ export async function restoreContract(
         .setTimeout(1000)
         .setNetworkPassphrase(network)
         .setSorobanData(new SorobanDataBuilder()
-            .setReadWrite(c.getFootprint())
+            .setReadWrite([c.getFootprint()])
             .build())
         .addOperation(Operation.restoreFootprint({}))
         .build();
@@ -102,8 +102,12 @@ export const bumpContractInstance = async (
     //     ])
     //     .build()
 
+    const acc = new Address(publicKey);
     let tx: Transaction = txBuilder
-        .addOperation(Operation.bumpFootprintExpiration({ ledgersToExpire: 10 }))
+        .addOperation(Operation.extendFootprintTtl({
+            source: publicKey,
+            extendTo: 0,
+          }))
         .setNetworkPassphrase(network)
         .setSorobanData(sorobanData)
         .setTimeout(0)
@@ -111,7 +115,6 @@ export const bumpContractInstance = async (
 
     // tx = await server.prepareTransaction(tx) as Transaction;
     const sim = await server.simulateTransaction(tx)
-    const acc = new Address(publicKey);
     tx = assembleTransaction(tx, sim)
         .addMemo(new Memo(MemoHash, acc.toScAddress().accountId().value()))
         // .setExtraSigners([kp.publicKey()])

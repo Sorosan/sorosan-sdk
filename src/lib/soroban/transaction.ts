@@ -201,3 +201,19 @@ export const submitTxAndGetWasmId = async (
 
     return "";
 }
+
+
+export const isSorobanTransaction = (tx: Transaction): boolean => {
+    if (tx.operations.length !== 1) {
+        return false;
+    }
+
+    switch (tx.operations[0]?.type) {
+        case 'invokeHostFunction':
+        case 'extendFootprintTtl':
+        case 'restoreFootprint':
+            return true;
+        default:
+            return false;
+    }
+}

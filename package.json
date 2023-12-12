@@ -1,7 +1,7 @@
 {
   "name": "@sorosan-sdk/core",
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A library for working with Stellar's Soroban",
   "author": "Sorosan",
   "homepage": "https://github.com/sorosan",
@@ -35,16 +35,16 @@
   },
   "devDependencies": {
     "docusaurus-plugin-typedoc": "^0.20.2",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "tsup": "^8.0.1",
-    "typedoc": "^0.25.1",
+    "typedoc": "^0.25.4",
     "typedoc-plugin-markdown": "^3.16.0",
-    "typescript": "^5.3.2",
+    "typescript": "^5.3.3",
     "vitest": "^0.34.6"
   },
   "dependencies": {
     "@stellar/freighter-api": "^1.7.1",
-    "@types/node": "^20.10.0",
-    "stellar-sdk": "^11.0.0-beta.6"
+    "@types/node": "^20.10.4",
+    "stellar-sdk": "^11.0.1"
   }
 }

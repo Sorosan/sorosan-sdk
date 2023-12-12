@@ -210,7 +210,7 @@ export const createWrapTokenOp = async (
         .contractIdPreimageFromAsset(asset.toXDRObject());
     const contractArgs = new xdr.CreateContractArgs({
         contractIdPreimage: contractIdPreimageFromAddress,
-        executable: xdr.ContractExecutable.contractExecutableToken(),
+        executable: xdr.ContractExecutable.contractExecutableStellarAsset(),
     });
 
     const hf = xdr.HostFunction.hostFunctionTypeCreateContract(contractArgs);
