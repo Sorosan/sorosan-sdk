@@ -101,7 +101,7 @@ export class SorosanSDK extends Soroban {
         contractAddress: string,
         method: string,
         args?: xdr.ScVal[],
-    ) {
+    ): Promise<SorobanRpc.Api.GetTransactionResponse> {
         if (!args) args = [];
         const gas = await this.calculateEstimateGas(contractAddress, method, args);
 
@@ -122,25 +122,16 @@ export class SorosanSDK extends Soroban {
 
         // If there is an error, the user likely canceled the transaction.
         if (signedTx.status) {
-            return false;
+            throw new Error(signedTx.status);
         }
 
         try {
             // Submit transaction
             const gtr = await submitTx(signedTx.tx, this.server, this.selectedNetwork);
-
-            if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
-                return true;
-            } else {
-                console.log(gtr);
-                return false;
-            }
-        } catch (e) {
-            console.log(e);
-            return false;
+            return gtr;
+        } catch (e: any) {
+            throw new Error(`Transaction Submission Error: ${e.message}`);
         }
-
-        return false;
     }
 
     /**

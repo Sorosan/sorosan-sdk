@@ -9,7 +9,7 @@ import {
     TimeoutInfinite,
     Transaction,
     TransactionBuilder,
-    xdr
+    xdr,
 } from "stellar-sdk";
 const { Server } = SorobanRpc;
 

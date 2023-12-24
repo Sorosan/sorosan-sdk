@@ -148,7 +148,7 @@ export class TokenSDK extends Soroban {
      *     console.error(`Smart contract deployment failed: ${error.message}`);
      * }
      */
-    async deploy(tokenWasm?: string): Promise<string> {
+    async deploy(tokenWasm: string = "a04a42a9dddb6259c256837063aeed66eb78145a579e128306d524b40adb4fe6"): Promise<string> {
         if (!tokenWasm) {
             tokenWasm = getTokenWasmId(this.selectedNetwork.network);
         }
@@ -263,14 +263,14 @@ export class TokenSDK extends Soroban {
      *     console.error(`Failed to retrieve asset information: ${error.message}`);
      * }
      */
-    async getAsset(contractAddress: string): Promise<Asset | null> {
-        try {
-            return await getAsset(contractAddress);
-        } catch (e) {
-            console.error(e);
-        }
-        return null;
-    }
+    // async getAsset(contractAddress: string): Promise<Asset | null> {
+    //     try {
+    //         return await getAsset(contractAddress);
+    //     } catch (e) {
+    //         console.error(e);
+    //     }
+    //     return null;
+    // }
 
     /**
      * Checks if a contract address is associated with a wrapped asset.
@@ -292,17 +292,17 @@ export class TokenSDK extends Soroban {
      *     console.error(`Failed to determine if asset is wrapped: ${error.message}`);
      * }
      */
-    async isWrapped(contractAddress: string): Promise<boolean> {
-        try {
-            const asset = await this.getAsset(contractAddress);
-            if (asset) {
-                return true;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        return false;
-    }
+    // async isWrapped(contractAddress: string): Promise<boolean> {
+    //     try {
+    //         const asset = await this.getAsset(contractAddress);
+    //         if (asset) {
+    //             return true;
+    //         }
+    //     } catch (e) {
+    //         console.error(e);
+    //     }
+    //     return false;
+    // }
 
     /**
      * Creates a new asset with the specified asset code, asset issuer, and limit.
@@ -334,6 +334,7 @@ export class TokenSDK extends Soroban {
             // Create asset trustline
             const trusted: boolean = await this.createAssetTrustline(asset, limit);
 
+            console.log("Asset trustline created:", trusted);
             if (!trusted) {
                 return;
             }
@@ -341,6 +342,7 @@ export class TokenSDK extends Soroban {
             // Fund the asset
             const fundedAsset = await this.fundAsset(asset, limit);
 
+            console.log("Asset fundedAsset created:", fundedAsset);
             if (fundedAsset) {
                 console.log("Asset creation successful:", fundedAsset.getCode(), fundedAsset.getIssuer());
                 return fundedAsset;
@@ -493,13 +495,11 @@ export class TokenSDK extends Soroban {
         try {
             // Submit transaction
             const gtr = await submitTx(tx, this.server, this.selectedNetwork);
-
             // Get the contractId
             if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
                 const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
                 const txMeta = xdr.TransactionMeta.fromXDR(buff);
-                const result = txMeta.v3().sorobanMeta()?.returnValue();
-
+                const result = txMeta.v3().sorobanMeta()?.returnValue() || xdr.ScVal.scvBool(true);
                 return result;
             }
         } catch (e: any) {
