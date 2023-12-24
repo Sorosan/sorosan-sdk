@@ -31,7 +31,7 @@ Soroban.constructor
 
 #### Defined in
 
-[sorosan-sdk.ts:26](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L26)
+[sorosan-sdk.ts:29](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L29)
 
 ## Properties
 
@@ -41,7 +41,7 @@ Soroban.constructor
 
 #### Defined in
 
-[sorosan-sdk.ts:22](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L22)
+[sorosan-sdk.ts:25](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L25)
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 #### Defined in
 
-[sorosan-sdk.ts:23](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L23)
+[sorosan-sdk.ts:26](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L26)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 #### Defined in
 
-[sorosan-sdk.ts:24](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L24)
+[sorosan-sdk.ts:27](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L27)
 
 ## Accessors
 
@@ -85,7 +85,7 @@ Soroban.setPublicKey
 
 #### Defined in
 
-[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L100)
+[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L100)
 
 ## Methods
 
@@ -130,7 +130,7 @@ Soroban.calculateEstimateGas
 
 #### Defined in
 
-[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L81)
+[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L81)
 
 ___
 
@@ -167,7 +167,7 @@ const result = await sdk.call(
 
 #### Defined in
 
-[sorosan-sdk.ts:50](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L50)
+[sorosan-sdk.ts:53](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L53)
 
 ___
 
@@ -186,7 +186,7 @@ Freighter is successful, otherwise `false`.
 
 #### Defined in
 
-[sorosan-sdk.ts:182](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L182)
+[sorosan-sdk.ts:176](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L176)
 
 ___
 
@@ -227,7 +227,7 @@ const gasCostInStroops: number = parseInt(gasEstimation);   // Convert to a numb
 
 #### Defined in
 
-[sorosan-sdk.ts:219](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L219)
+[sorosan-sdk.ts:213](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L213)
 
 ___
 
@@ -256,7 +256,7 @@ if (!hasFreighter) {
 
 #### Defined in
 
-[sorosan-sdk.ts:156](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L156)
+[sorosan-sdk.ts:150](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L150)
 
 ___
 
@@ -288,7 +288,7 @@ const hundred: xdr.scVal = sdk.nativeToScVal(100, "i128"),
 
 #### Defined in
 
-[sorosan-sdk.ts:254](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L254)
+[sorosan-sdk.ts:248](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L248)
 
 ___
 
@@ -318,13 +318,13 @@ You have to manually convert them.
 
 #### Defined in
 
-[sorosan-sdk.ts:235](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L235)
+[sorosan-sdk.ts:229](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L229)
 
 ___
 
 ### send
 
-▸ **send**(`contractAddress`, `method`, `args?`): `Promise`<`boolean`\>
+▸ **send**(`contractAddress`, `method`, `args?`): `Promise`<`GetTransactionResponse`\>
 
 Generic call method for a Soroban contract. This method estimates gas, creates a transaction builder,
 prepares the transaction, and submits the transaction to the network via Freighter signing.
@@ -339,7 +339,7 @@ prepares the transaction, and submits the transaction to the network via Freight
 
 #### Returns
 
-`Promise`<`boolean`\>
+`Promise`<`GetTransactionResponse`\>
 
 A promise that resolves to `true` if the transaction of the contract call
 was successful, otherwise `false`.
@@ -359,7 +359,49 @@ const result = await sdk.send(
 
 #### Defined in
 
-[sorosan-sdk.ts:97](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L97)
+[sorosan-sdk.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L100)
+
+___
+
+### structToScVal
+
+▸ **structToScVal**(`struct`): `ScVal`
+
+Converts a Rust type struct into an `xdr.ScVal` on Soroban type.
+
+This function takes a `xdr.ScSpecUdtStructV0` object representing a Rust type struct and converts it
+into an `xdr.ScVal` object on the Soroban type system. It handles both unnamed and named structs
+and returns the corresponding `xdr.ScVal` representation based on the struct's field names.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `struct` | `ScSpecUdtStructV0` | The `xdr.ScSpecUdtStructV0` object to convert into an `xdr.ScVal`. |
+
+#### Returns
+
+`ScVal`
+
+The converted `xdr.ScVal` representing the Rust struct on Soroban type.
+
+**`Example`**
+
+```ts
+// Get Rust information...
+const specs = await sdk.contract.decompileContract("CDUL5OW2XI7JJQL7VGWD6Y34SXAV3ZDCSW55SUYRFGHWXVK25E7S7FXJ")
+const types = specs.filter(x => x.switch() === xdr.ScSpecEntryKind.scSpecEntryUdtStructV0());
+
+// Convert the Rust struct to an xdr.ScVal
+types.forEach((type) => {
+     const struct = structToScVal(myStruct as as xdr.scSpecEntryUdtStructV0)
+     console.log(struct);
+});
+```
+
+#### Defined in
+
+[sorosan-sdk.ts:273](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L273)
 
 ___
 
@@ -391,7 +433,7 @@ console.log(`Equivalent in Stroops: ${stroops.toString()}`);
 
 #### Defined in
 
-[sorosan-sdk.ts:268](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L268)
+[sorosan-sdk.ts:293](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L293)
 
 ___
 
@@ -423,4 +465,4 @@ console.log(`Equivalent in XLM: ${xlm.toString()}`);
 
 #### Defined in
 
-[sorosan-sdk.ts:282](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/sorosan-sdk.ts#L282)
+[sorosan-sdk.ts:307](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L307)

@@ -31,7 +31,7 @@ Soroban.constructor
 
 #### Defined in
 
-[util-sdk.ts:13](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/util-sdk.ts#L13)
+[util-sdk.ts:14](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L14)
 
 ## Accessors
 
@@ -55,7 +55,7 @@ Soroban.setPublicKey
 
 #### Defined in
 
-[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L100)
+[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L100)
 
 ## Methods
 
@@ -87,7 +87,7 @@ console.log(address);
 
 #### Defined in
 
-[util-sdk.ts:29](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/util-sdk.ts#L29)
+[util-sdk.ts:30](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L30)
 
 ___
 
@@ -132,7 +132,7 @@ Soroban.calculateEstimateGas
 
 #### Defined in
 
-[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L81)
+[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L81)
 
 ___
 
@@ -172,7 +172,7 @@ console.log(isAddress); // false
 
 #### Defined in
 
-[util-sdk.ts:103](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/util-sdk.ts#L103)
+[util-sdk.ts:104](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L104)
 
 ___
 
@@ -212,7 +212,27 @@ console.log(isContractAddress); // false
 
 #### Defined in
 
-[util-sdk.ts:124](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/util-sdk.ts#L124)
+[util-sdk.ts:125](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L125)
+
+___
+
+### isSorobanTransaction
+
+▸ **isSorobanTransaction**(`tx`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `tx` | `Transaction`<`Memo`<`MemoType`\>, `Operation`[]\> |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[util-sdk.ts:129](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L129)
 
 ___
 
@@ -252,7 +272,7 @@ console.log(short); // ABC
 
 #### Defined in
 
-[util-sdk.ts:82](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/util-sdk.ts#L82)
+[util-sdk.ts:83](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L83)
 
 ___
 
@@ -284,7 +304,7 @@ console.log(hash); // CDAT37IEQWT2K4V22PSUM5WPTHLCK5JV2OHF6JIQQ3S3LSFQD5FSGYN6
 
 #### Defined in
 
-[util-sdk.ts:61](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/util-sdk.ts#L61)
+[util-sdk.ts:62](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L62)
 
 ___
 
@@ -316,4 +336,4 @@ console.log(id); // c13dfd0485a7a572bad3e54676cf99d6257535d38e5f251086e5b5c8b01f
 
 #### Defined in
 
-[util-sdk.ts:45](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/util-sdk.ts#L45)
+[util-sdk.ts:46](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/util-sdk.ts#L46)

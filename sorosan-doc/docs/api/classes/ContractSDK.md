@@ -31,7 +31,7 @@ Soroban.constructor
 
 #### Defined in
 
-[contract-sdk.ts:19](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L19)
+[contract-sdk.ts:20](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L20)
 
 ## Accessors
 
@@ -55,7 +55,7 @@ Soroban.setPublicKey
 
 #### Defined in
 
-[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L100)
+[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L100)
 
 ## Methods
 
@@ -100,7 +100,50 @@ Soroban.calculateEstimateGas
 
 #### Defined in
 
-[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L81)
+[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L81)
+
+___
+
+### decompile
+
+▸ **decompile**(`contractAddress`): `Promise`<`ScSpecEntry`[]\>
+
+Asynchronously retrieves contract information, including code and specification details,
+associated with a given contract address.
+
+This function allows you to fetch contract data, including the WebAssembly (Wasm) code,
+and extract information about the contract, such as functions with their parameters and outputs,
+data structures (structs and enums), and data keys.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `contractAddress` | `string` | The address of the contract for which to retrieve information. |
+
+#### Returns
+
+`Promise`<`ScSpecEntry`[]\>
+
+A promise that resolves to an array of `xdr.ScSpecEntry` objects,
+representing the contract's specification and details.
+
+**`Example`**
+
+```ts
+// Retrieve contract information for a given contract address
+const contractAddress = "GDUY7J7A33TQWOSOQGDO776GGLM3UQERL4J3SPT56F6YS4ID7MLDERI4";
+const specs = await sdk.contract.decompileContract(contractAddress);
+
+// Access specific information from the contract specification
+const fns = specs.filter(x => x.switch() === xdr.ScSpecEntryKind.scSpecEntryFunctionV0());
+const types = specs.filter(x => x.switch() === xdr.ScSpecEntryKind.scSpecEntryUdtStructV0());
+const enums = specs.filter(x => x.switch() === xdr.ScSpecEntryKind.scSpecEntryUdtEnumV0());
+```
+
+#### Defined in
+
+[contract-sdk.ts:398](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L398)
 
 ___
 
@@ -144,7 +187,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:88](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L88)
+[contract-sdk.ts:89](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L89)
 
 ___
 
@@ -188,15 +231,17 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:44](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L44)
+[contract-sdk.ts:45](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L45)
 
 ___
 
 ### getContractABI
 
-▸ **getContractABI**(`contractAddress`): `Promise`<`any`[] \| ``""``\>
+▸ **getContractABI**(`contractAddress`): `Promise`<`any`[]\>
 
-Retrieves the ABI (Application Binary Interface) of a smart contract by its contract address.
+Retrieves the ABI (Application Binary Interface) of a smart contract by its contract address,
+that contains params names and input types, and outputs names and types. All needed information
+to call a contract method.
 
 #### Parameters
 
@@ -206,7 +251,7 @@ Retrieves the ABI (Application Binary Interface) of a smart contract by its cont
 
 #### Returns
 
-`Promise`<`any`[] \| ``""``\>
+`Promise`<`any`[]\>
 
 - A promise that resolves to an array of contract methods and their details,
 including method name, parameters, and outputs.
@@ -231,7 +276,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:345](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L345)
+[contract-sdk.ts:348](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L348)
 
 ___
 
@@ -280,7 +325,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:223](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L223)
+[contract-sdk.ts:224](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L224)
 
 ___
 
@@ -328,7 +373,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:129](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L129)
+[contract-sdk.ts:130](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L130)
 
 ___
 
@@ -376,7 +421,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:192](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L192)
+[contract-sdk.ts:193](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L193)
 
 ___
 
@@ -437,7 +482,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:287](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L287)
+[contract-sdk.ts:288](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L288)
 
 ___
 
@@ -470,7 +515,7 @@ console.log(`Is valid contract hash: ${isValid}`);
 
 #### Defined in
 
-[contract-sdk.ts:454](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L454)
+[contract-sdk.ts:497](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L497)
 
 ___
 
@@ -518,4 +563,4 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:413](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/contract-sdk.ts#L413)
+[contract-sdk.ts:446](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L446)

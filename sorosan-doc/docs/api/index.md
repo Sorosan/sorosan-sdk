@@ -23,13 +23,12 @@ npm install --save @sorosan-sdk/core
 ```ts
 import { 
     SorosanSDK,     
-    FUTURENET_DETAILS,
     MAINNET_DETAILS,
     TESTNET_DETAILS
 } from '@sorosan-sdk/core'
 
-const sdk: SorosanSDK = SorosanSDK(FUTURENET_DETAILS)		// Currently only support futurenet and testnet
-const contractSDK = sdk.contract;		// To access other SDK
+const sdk: SorosanSDK = SorosanSDK(TESTNET_DETAILS)		// Currently only support testnet
+const contractSDK = sdk.contract;		                // To access other SDK
 ```
 
 ### To use as a module locally

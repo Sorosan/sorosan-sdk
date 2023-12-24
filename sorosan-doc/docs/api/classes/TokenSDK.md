@@ -31,7 +31,7 @@ Soroban.constructor
 
 #### Defined in
 
-[token-sdk.ts:29](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L29)
+[token-sdk.ts:29](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L29)
 
 ## Accessors
 
@@ -55,7 +55,7 @@ Soroban.setPublicKey
 
 #### Defined in
 
-[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L100)
+[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L100)
 
 ## Methods
 
@@ -106,7 +106,7 @@ console.log(`Balance: ${symbol}`);  // Example output: Balance: 1000n
 
 #### Defined in
 
-[token-sdk.ts:98](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L98)
+[token-sdk.ts:98](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L98)
 
 ___
 
@@ -151,7 +151,7 @@ Soroban.calculateEstimateGas
 
 #### Defined in
 
-[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/soroban.ts#L81)
+[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L81)
 
 ___
 
@@ -193,7 +193,7 @@ console.log(asset.getIssuer());      // GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYO
 
 #### Defined in
 
-[token-sdk.ts:325](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L325)
+[token-sdk.ts:325](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L325)
 
 ___
 
@@ -232,7 +232,7 @@ console.log(`Decimal value: ${decimal}`);  // Example output: Decimal value: 7
 
 #### Defined in
 
-[token-sdk.ts:127](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L127)
+[token-sdk.ts:127](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L127)
 
 ___
 
@@ -244,9 +244,9 @@ Deploys a smart contract token to the using a given WebAssembly (Wasm) binary co
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `tokenWasm?` | `string` | The WebAssembly (Wasm) binary code in hexadecimal format. Default is a placeholder value. |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `tokenWasm?` | `string` | `"a04a42a9dddb6259c256837063aeed66eb78145a579e128306d524b40adb4fe6"` | The WebAssembly (Wasm) binary code in hexadecimal format. Default is a placeholder value. |
 
 #### Returns
 
@@ -275,49 +275,7 @@ try {
 
 #### Defined in
 
-[token-sdk.ts:151](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L151)
-
-___
-
-### getAsset
-
-▸ **getAsset**(`contractAddress`): `Promise`<``null`` \| `Asset`\>
-
-Retrieves asset information by its contract address.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `contractAddress` | `string` | The contract address of the asset. |
-
-#### Returns
-
-`Promise`<``null`` \| `Asset`\>
-
-- A promise that resolves to the asset information or null if not found.
-
-**`Async`**
-
-**`Example`**
-
-```ts
-const contractAddress = "CAZNM4AAQCQPUQGR72MIC7NPWHZBDOQKZBUQ3WTULIDALOWMOG23L6JT";
-try {
-    const assetInfo = await sdk.token.getAsset(contractAddress);
-    if (assetInfo) {
-        console.log(`Asset code: ${assetInfo.getCode()}, Issuer: ${assetInfo.getIssuer()}`);
-    } else {
-        console.log("Asset not found.");
-    }
-} catch (error) {
-    console.error(`Failed to retrieve asset information: ${error.message}`);
-}
-```
-
-#### Defined in
-
-[token-sdk.ts:266](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L266)
+[token-sdk.ts:151](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L151)
 
 ___
 
@@ -358,7 +316,7 @@ try {
 
 #### Defined in
 
-[token-sdk.ts:236](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L236)
+[token-sdk.ts:236](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L236)
 
 ___
 
@@ -381,49 +339,7 @@ ___
 
 #### Defined in
 
-[token-sdk.ts:171](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L171)
-
-___
-
-### isWrapped
-
-▸ **isWrapped**(`contractAddress`): `Promise`<`boolean`\>
-
-Checks if a contract address is associated with a wrapped asset.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `contractAddress` | `string` | The contract address to check. |
-
-#### Returns
-
-`Promise`<`boolean`\>
-
-- A promise that resolves to true if the asset is wrapped, false otherwise.
-
-**`Async`**
-
-**`Example`**
-
-```ts
-const contractAddress = "CAZNM4AAQCQPUQGR72MIC7NPWHZBDOQKZBUQ3WTULIDALOWMOG23L6JT";
-try {
-    const isWrapped = await sdk.token.isWrapped(contractAddress);
-    if (isWrapped) {
-        console.log(`Asset at ${contractAddress} is wrapped.`);
-    } else {
-        console.log(`Asset at ${contractAddress} is not wrapped.`);
-    }
-} catch (error) {
-    console.error(`Failed to determine if asset is wrapped: ${error.message}`);
-}
-```
-
-#### Defined in
-
-[token-sdk.ts:295](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L295)
+[token-sdk.ts:171](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L171)
 
 ___
 
@@ -460,7 +376,7 @@ console.log(`Token Name: ${tokenName}`);  // Example output: Token Name: Stellar
 
 #### Defined in
 
-[token-sdk.ts:47](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L47)
+[token-sdk.ts:47](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L47)
 
 ___
 
@@ -497,7 +413,7 @@ console.log(`Token Symbol: ${symbol}`);  // Example output: Token Symbol: XLM
 
 #### Defined in
 
-[token-sdk.ts:67](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L67)
+[token-sdk.ts:67](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L67)
 
 ___
 
@@ -537,4 +453,4 @@ console.log(contractAddress);
 
 #### Defined in
 
-[token-sdk.ts:371](https://github.com/Sorosan/sorosan-sdk/blob/40fe736/src/sdk/token-sdk.ts#L371)
+[token-sdk.ts:373](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L373)
