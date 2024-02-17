@@ -1,6 +1,6 @@
 {
     "entryPoints": [
-        "./src/sdk/*-sdk.ts"
+        "./src/sdk/**/*"
     ],  
     "includes": "./inc/",
     "exclude": "./sdk/lib/**/*",

@@ -1,33 +1,28 @@
-import { Account, Asset, SorobanRpc, xdr } from 'stellar-sdk';
-import { NetworkDetails } from '../lib/network';
+import { Account, Asset, SorobanRpc, Transaction, xdr } from 'stellar-sdk';
+import { NetworkDetails } from 'lib/network';
 import {
-    PLACEHOLDER_ACCOUNT,
-    TOKEN_WASM_ID,
+    TransactionResponse,
     accountToScVal,
-    assetPayment,
-    changeTrust,
-    createContractOp,
-    createWrapTokenOp,
-    getAsset,
     getAssetContractId,
     getContractAddress,
-    getContractHash,
-    getTokenBalance,
-    getTokenDecimals,
-    getTokenName,
-    getTokenSymbol,
     getTokenWasmId,
-    prepareContractCall,
     signTransactionWithWallet,
     submitTx,
-    submitTxAndGetContractId,
     toScVal
-} from '../lib/soroban';
+} from 'lib/soroban';
 import { Soroban } from './soroban';
+import { SorosanToken } from './classes/sorosan-token';
 
 export class TokenSDK extends Soroban {
     constructor(selectedNetwork: NetworkDetails, activePublicKey?: string) {
         super(selectedNetwork, activePublicKey);
+    }
+
+    /**
+     * 
+     */
+    load(contractAddress: string): SorosanToken {
+        return new SorosanToken(contractAddress, this.selectedNetwork, this.publicKey);
     }
 
     /**
@@ -45,9 +40,8 @@ export class TokenSDK extends Soroban {
      * console.log(`Token Name: ${tokenName}`);  // Example output: Token Name: Stellar Token
      */
     async name(contractAddress: string): Promise<string> {
-        const txBuilder = await this.initaliseTransactionBuilder(this.publicKey || PLACEHOLDER_ACCOUNT);
-        const tokenName = await getTokenName(contractAddress, txBuilder, this.server);
-        return tokenName;
+        const token = new SorosanToken(contractAddress, this.selectedNetwork, this.publicKey);
+        return await token.name();
     }
 
     /**
@@ -65,9 +59,8 @@ export class TokenSDK extends Soroban {
      * console.log(`Token Symbol: ${symbol}`);  // Example output: Token Symbol: XLM
      */
     async symbol(contractAddress: string): Promise<string> {
-        const txBuilder = await this.initaliseTransactionBuilder(this.publicKey || PLACEHOLDER_ACCOUNT);
-        const tokenName = await getTokenSymbol(contractAddress, txBuilder, this.server);
-        return tokenName;
+        const token = new SorosanToken(contractAddress, this.selectedNetwork, this.publicKey);
+        return await token.name();
     }
 
     /**
@@ -96,16 +89,8 @@ export class TokenSDK extends Soroban {
      * console.log(`Balance: ${symbol}`);  // Example output: Balance: 1000n
      */
     async balance(contractAddress: string, address?: string): Promise<BigInt> {
-        const addressToCheck = address || this.publicKey;
-        if (!addressToCheck) {
-            throw new Error("No address");
-        }
-
-        const txBuilder = await this.initaliseTransactionBuilder(this.publicKey || PLACEHOLDER_ACCOUNT);
-        const balance = await getTokenBalance(
-            contractAddress, addressToCheck,
-            txBuilder, this.server);
-        return balance;
+        const token = new SorosanToken(contractAddress, this.selectedNetwork, this.publicKey);
+        return await token.balance(address);
     }
 
     /**
@@ -125,9 +110,8 @@ export class TokenSDK extends Soroban {
      * console.log(`Decimal value: ${decimal}`);  // Example output: Decimal value: 7
      */
     async decimal(contractAddress: string): Promise<number> {
-        const txBuilder = await this.initaliseTransactionBuilder(this.publicKey || PLACEHOLDER_ACCOUNT);
-        const decimal = await getTokenDecimals(contractAddress, txBuilder, this.server);
-        return decimal;
+        const token = new SorosanToken(contractAddress, this.selectedNetwork, this.publicKey);
+        return await token.decimal();
     }
 
     /**
@@ -148,26 +132,33 @@ export class TokenSDK extends Soroban {
      *     console.error(`Smart contract deployment failed: ${error.message}`);
      * }
      */
-    async deploy(tokenWasm: string = "a04a42a9dddb6259c256837063aeed66eb78145a579e128306d524b40adb4fe6"): Promise<string> {
-        if (!tokenWasm) {
-            tokenWasm = getTokenWasmId(this.selectedNetwork.network);
-        }
-
+    async deploy(): Promise<string> {
+        const tokenWasm = getTokenWasmId(this.selectedNetwork.network);
         const txBuilder = await this.initaliseTransactionBuilder(this.publicKey);
         const source: Account = await this.server.getAccount(this.publicKey);
-
-        const tx = await createContractOp(
-            tokenWasm,
-            source,
-            txBuilder,
-            this.server);
+        const tx: Transaction = await txBuilder
+            .createContractOp(tokenWasm, source)
+            .buildAndPrepareAsTransaction(this.server);
 
         const ret = await signTransactionWithWallet(tx.toXDR(), this.publicKey, this.selectedNetwork);
-        const contractId = await submitTxAndGetContractId(ret, this.server, this.selectedNetwork);
+        if (ret.status) {
+            return Promise.reject("Transaction signing failed");
+        }
 
-        return contractId;
+        const reciept = await submitTx(ret.tx, this.server, this.selectedNetwork);
+        const payload = TransactionResponse.contractId(reciept);    // contractID
+
+        return payload;
     }
 
+    /**
+     * Used ContractSDK.call to call the contract method initialize. This will be deprecated in the future.
+     * @param contractAddress 
+     * @param name 
+     * @param symbol 
+     * @param decimal 
+     * @returns 
+     */
     async initialise(
         contractAddress: string,
         name: string,
@@ -183,16 +174,12 @@ export class TokenSDK extends Soroban {
         const method = "initialize";
         const gas = await this.calculateEstimateGas(contractAddress, method, args);
         const txBuilder = await this.initaliseTransactionBuilder(this.publicKey, gas.toString());
-        const transaction = await prepareContractCall(
-            txBuilder,
-            this.server,
-            contractAddress,
-            method,
-            args
-        )
+        const tx = await txBuilder
+            .invokeContractFunctionOp(contractAddress, method, args)
+            .buildAndPrepareAsTransaction(this.server);
 
         const signedTx = await signTransactionWithWallet(
-            transaction.toXDR(),
+            tx.toXDR(),
             this.publicKey!,
             this.selectedNetwork,
         )
@@ -317,10 +304,10 @@ export class TokenSDK extends Soroban {
      * @example
      * const asset = await sdk.wallet.createAsset(
      *    "WXLM", 
-     *    "GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL",
+     *    "GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF",
      *    10000000)
      * console.log(asset.getCode());        // WXLM
-     * console.log(asset.getIssuer());      // GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL
+     * console.log(asset.getIssuer());      // GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF
      */
     async createAsset(
         assetCode: string,
@@ -365,30 +352,26 @@ export class TokenSDK extends Soroban {
      * @example
      * const asset = await sdk.wallet.createAsset(
      *    "WXLM", 
-     *    "GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL",
+     *    "GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF",
      *    10000000)
      * const contractAddress = await sdk.wallet.wrap(asset);        // Main method
      * console.log(contractAddress);
      */
     async wrap(asset: Asset): Promise<string> {
-        console.log("wrap");
-        console.log("Asset created", asset.getCode(), asset?.getIssuer());
+        console.log("Wrapping Asset", asset.getCode(), asset?.getIssuer());
         if (!asset) {
             throw new Error("Asset not created");
         }
 
         const txBuilder = await this.initaliseTransactionBuilder();
-        // const account = await this.server.getAccount(this.publicKey);
+
         const contractAddress = await this.getContractAddressFromAsset(
             asset?.getCode(),
             asset.getIssuer());
 
-        const tx = await createWrapTokenOp(
-            txBuilder,
-            this.server,
-            asset,
-            contractAddress
-        );
+        const tx = await txBuilder
+            .createContractFromAssetOp(asset, contractAddress)
+            .buildAndPrepareAsTransaction(this.server);
 
         const signedTx = await signTransactionWithWallet(
             tx.toXDR(),
@@ -402,7 +385,7 @@ export class TokenSDK extends Soroban {
         }
 
         try {
-            const result = await this.handleAssetSubmit(signedTx.tx);
+            const result = await this.submitAndGetValue(signedTx.tx);
             if (result) {
                 return contractAddress;
             }
@@ -424,7 +407,10 @@ export class TokenSDK extends Soroban {
      */
     private async fundAsset(asset: Asset, limit: string): Promise<Asset | undefined> {
         const txBuilder = await this.initaliseTransactionBuilder();
-        const tx = await assetPayment(txBuilder, this.publicKey, asset, limit);
+        const tx: Transaction = await txBuilder
+            .assetPaymentOp(this.publicKey, asset, limit)
+            .buildAndPrepareAsTransaction(this.server);
+
         const signedTx = await signTransactionWithWallet(
             tx.toXDR(),
             this.publicKey!,
@@ -437,7 +423,7 @@ export class TokenSDK extends Soroban {
         }
 
         try {
-            const result = await this.handleAssetSubmit(signedTx.tx);
+            const result = await this.submitAndGetValue(signedTx.tx);
             if (result) {
                 return asset;
             }
@@ -459,7 +445,10 @@ export class TokenSDK extends Soroban {
      */
     private async createAssetTrustline(asset: Asset, limit: string): Promise<boolean> {
         const txBuilder = await this.initaliseTransactionBuilder();
-        const tx = await changeTrust(txBuilder, asset, limit);
+        const tx: Transaction = await txBuilder
+            .changeTrustOp(asset, limit)
+            .buildAndPrepareAsTransaction(this.server);
+
         const signedTx = await signTransactionWithWallet(
             tx.toXDR(),
             this.publicKey!,
@@ -473,7 +462,7 @@ export class TokenSDK extends Soroban {
 
         let trusted: boolean = false;
         try {
-            const result = await this.handleAssetSubmit(signedTx.tx);
+            const result = await this.submitAndGetValue(signedTx.tx);
             (result != null) && (trusted = true);
         } catch (e: any) {
             console.error("ChangeTrust submit transaction failed:", e.message);
@@ -490,18 +479,10 @@ export class TokenSDK extends Soroban {
      * @param {string} tx - The transaction to submit.
      * @returns {Promise<xdr.ScVal | undefined>} - A promise that resolves to the contract's return value if successful; otherwise, returns undefined.
      */
-    private async handleAssetSubmit(
-        tx: string): Promise<xdr.ScVal | undefined> {
+    private async submitAndGetValue(tx: string): Promise<xdr.ScVal | undefined> {
         try {
-            // Submit transaction
             const gtr = await submitTx(tx, this.server, this.selectedNetwork);
-            // Get the contractId
-            if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
-                const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
-                const txMeta = xdr.TransactionMeta.fromXDR(buff);
-                const result = txMeta.v3().sorobanMeta()?.returnValue() || xdr.ScVal.scvBool(true);
-                return result;
-            }
+            return TransactionResponse.scVal(gtr);
         } catch (e: any) {
             console.error("ChangeTrust submit transaction failed:", e.message);
         }

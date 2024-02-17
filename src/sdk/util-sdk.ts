@@ -1,20 +1,17 @@
 import { Transaction, xdr } from 'stellar-sdk';
-import { NetworkDetails } from '../lib/network';
+import BigNumber from 'bignumber.js';
 import {
     accountToScVal,
     getContractAddress,
     getContractHash,
     isAddress,
     isSorobanTransaction,
-    mask
-} from '../lib/soroban';
-import { Soroban } from './soroban';
+    mask,
+    stroopToXlm,
+    xlmToStroop
+} from 'lib/soroban';
 
-export class UtilSDK extends Soroban {
-    constructor(selectedNetwork: NetworkDetails, activePublicKey?: string) {
-        super(selectedNetwork, activePublicKey);
-    }
-
+export class UtilSDK {
     /**
      * Converts a string address to a Soroban ScVal type Address.
      *
@@ -126,8 +123,50 @@ export class UtilSDK extends Soroban {
         return val[0] === 'C' && isAddress(val);
     }
 
+    /**
+     * Checks if a transaction is a Soroban transaction.
+     *
+     * This method determines whether the provided transaction is a Soroban transaction by checking its operations.
+     *
+     * @param {Transaction} tx - The transaction to check.
+     * @returns {boolean} - A boolean indicating whether the transaction is a Soroban transaction.
+     * 
+     * @example
+     * // Example usage:
+     * const transaction: Transaction;
+     * const isSorobanTx = sdk.util.isSorobanTransaction(transaction);
+     * console.log('Is Soroban transaction:', isSorobanTx);
+     */
     isSorobanTransaction(tx: Transaction): boolean {
         return isSorobanTransaction(tx) || false;
+    }
+
+    /**
+      * Converts XLM (Lumen) to stroops (1 XLM = 10^7 stroops).
+      *
+      * @param {number} amount - The amount of XLM to convert.
+      * @returns {BigNumber} The equivalent amount in stroops as a BigNumber.
+      * @example
+      * const xlmAmount = 5.0; // Replace with the actual amount of XLM to convert.
+      * const stroops = sdk.toStroop(xlmAmount);
+      * console.log(`Equivalent in Stroops: ${stroops.toString()}`);
+      */
+    toStroop(amount: number): BigNumber {
+        return xlmToStroop(amount.toString());
+    }
+
+    /**
+     * Converts stroops to XLM (Lumen) (1 XLM = 10^7 stroops).
+     *
+     * @param {number} amount - The amount in stroops to convert.
+     * @returns {BigNumber} The equivalent amount in XLM as a BigNumber.
+     * @example
+     * const stroopsAmount = 50000000; // Replace with the actual amount in stroops to convert.
+     * const xlm = sdk.toXLM(stroopsAmount);
+     * console.log(`Equivalent in XLM: ${xlm.toString()}`);
+     */
+    toXLM(amount: number): BigNumber {
+        return stroopToXlm(BigNumber(amount));
     }
 }
 

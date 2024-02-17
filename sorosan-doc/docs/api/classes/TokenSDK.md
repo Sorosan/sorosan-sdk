@@ -31,7 +31,7 @@ Soroban.constructor
 
 #### Defined in
 
-[token-sdk.ts:29](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L29)
+[src/sdk/token-sdk.ts:17](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L17)
 
 ## Accessors
 
@@ -55,7 +55,7 @@ Soroban.setPublicKey
 
 #### Defined in
 
-[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L100)
+[src/sdk/soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/soroban.ts#L100)
 
 ## Methods
 
@@ -106,7 +106,7 @@ console.log(`Balance: ${symbol}`);  // Example output: Balance: 1000n
 
 #### Defined in
 
-[token-sdk.ts:98](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L98)
+[src/sdk/token-sdk.ts:91](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L91)
 
 ___
 
@@ -151,7 +151,7 @@ Soroban.calculateEstimateGas
 
 #### Defined in
 
-[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L81)
+[src/sdk/soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/soroban.ts#L81)
 
 ___
 
@@ -185,15 +185,15 @@ If any step of the asset creation process fails.
 ```ts
 const asset = await sdk.wallet.createAsset(
    "WXLM", 
-   "GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL",
+   "GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF",
    10000000)
 console.log(asset.getCode());        // WXLM
-console.log(asset.getIssuer());      // GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL
+console.log(asset.getIssuer());      // GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF
 ```
 
 #### Defined in
 
-[token-sdk.ts:325](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L325)
+[src/sdk/token-sdk.ts:312](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L312)
 
 ___
 
@@ -232,21 +232,15 @@ console.log(`Decimal value: ${decimal}`);  // Example output: Decimal value: 7
 
 #### Defined in
 
-[token-sdk.ts:127](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L127)
+[src/sdk/token-sdk.ts:112](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L112)
 
 ___
 
 ### deploy
 
-▸ **deploy**(`tokenWasm?`): `Promise`<`string`\>
+▸ **deploy**(): `Promise`<`string`\>
 
 Deploys a smart contract token to the using a given WebAssembly (Wasm) binary code and returns the contract's unique identifier (contractId).
-
-#### Parameters
-
-| Name | Type | Default value | Description |
-| :------ | :------ | :------ | :------ |
-| `tokenWasm?` | `string` | `"a04a42a9dddb6259c256837063aeed66eb78145a579e128306d524b40adb4fe6"` | The WebAssembly (Wasm) binary code in hexadecimal format. Default is a placeholder value. |
 
 #### Returns
 
@@ -275,7 +269,7 @@ try {
 
 #### Defined in
 
-[token-sdk.ts:151](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L151)
+[src/sdk/token-sdk.ts:135](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L135)
 
 ___
 
@@ -316,13 +310,15 @@ try {
 
 #### Defined in
 
-[token-sdk.ts:236](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L236)
+[src/sdk/token-sdk.ts:223](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L223)
 
 ___
 
 ### initialise
 
 ▸ **initialise**(`contractAddress`, `name`, `symbol`, `decimal`): `Promise`<`boolean`\>
+
+Used ContractSDK.call to call the contract method initialize. This will be deprecated in the future.
 
 #### Parameters
 
@@ -339,7 +335,27 @@ ___
 
 #### Defined in
 
-[token-sdk.ts:171](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L171)
+[src/sdk/token-sdk.ts:162](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L162)
+
+___
+
+### load
+
+▸ **load**(`contractAddress`): [`SorosanToken`](SorosanToken.md)
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `contractAddress` | `string` |
+
+#### Returns
+
+[`SorosanToken`](SorosanToken.md)
+
+#### Defined in
+
+[src/sdk/token-sdk.ts:24](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L24)
 
 ___
 
@@ -376,7 +392,7 @@ console.log(`Token Name: ${tokenName}`);  // Example output: Token Name: Stellar
 
 #### Defined in
 
-[token-sdk.ts:47](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L47)
+[src/sdk/token-sdk.ts:42](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L42)
 
 ___
 
@@ -413,7 +429,7 @@ console.log(`Token Symbol: ${symbol}`);  // Example output: Token Symbol: XLM
 
 #### Defined in
 
-[token-sdk.ts:67](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L67)
+[src/sdk/token-sdk.ts:61](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L61)
 
 ___
 
@@ -445,7 +461,7 @@ If the asset is not provided, the wrap operation fails, or there is an issue wit
 ```ts
 const asset = await sdk.wallet.createAsset(
    "WXLM", 
-   "GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL",
+   "GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF",
    10000000)
 const contractAddress = await sdk.wallet.wrap(asset);        // Main method
 console.log(contractAddress);
@@ -453,4 +469,4 @@ console.log(contractAddress);
 
 #### Defined in
 
-[token-sdk.ts:373](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/token-sdk.ts#L373)
+[src/sdk/token-sdk.ts:360](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/token-sdk.ts#L360)

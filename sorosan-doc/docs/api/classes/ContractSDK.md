@@ -31,7 +31,7 @@ Soroban.constructor
 
 #### Defined in
 
-[contract-sdk.ts:20](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L20)
+[src/sdk/contract-sdk.ts:20](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L20)
 
 ## Accessors
 
@@ -55,7 +55,7 @@ Soroban.setPublicKey
 
 #### Defined in
 
-[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L100)
+[src/sdk/soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/soroban.ts#L100)
 
 ## Methods
 
@@ -100,7 +100,146 @@ Soroban.calculateEstimateGas
 
 #### Defined in
 
-[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L81)
+[src/sdk/soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/soroban.ts#L81)
+
+___
+
+### contractCodeByAddress
+
+▸ **contractCodeByAddress**(`contractAddress`): `Promise`<``null`` \| { `code`: `string` ; `ledgerSeq`: `number`  }\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `contractAddress` | `string` |
+
+#### Returns
+
+`Promise`<``null`` \| { `code`: `string` ; `ledgerSeq`: `number`  }\>
+
+#### Defined in
+
+[src/sdk/contract-sdk.ts:198](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L198)
+
+___
+
+### contractCodeByWasm
+
+▸ **contractCodeByWasm**(`wasmId`): `Promise`<``null`` \| { `code`: `string` ; `ledgerSeq`: `number`  }\>
+
+Retrieves the WebAssembly (Wasm) code of a smart contract by its Wasm ID.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `wasmId` | `Buffer` | The unique identifier (Wasm ID) of the contract. |
+
+#### Returns
+
+`Promise`<``null`` \| { `code`: `string` ; `ledgerSeq`: `number`  }\>
+
+- A promise that resolves to an object
+containing the Wasm code as a hexadecimal string and the ledger sequence number when the code was last modified.
+Returns `null` if the contract code is not found or if there is an error.
+
+**`Throws`**
+
+If there is an error in retrieving the contract code.
+
+**`Example`**
+
+```ts
+// Retrieve the Wasm code of a contract by its Wasm ID.
+const wasmId = Buffer.from('abcdef123456', 'hex'); // Replace with the actual Wasm ID.
+
+try {
+  const contractCode = await sdk.contract.getContractCode(wasmId);
+  if (contractCode) {
+    console.log(`Contract code: ${contractCode.wasmCode}`);
+    console.log(`Last modified ledger: ${contractCode.wasmCodeLedger}`);
+  } else {
+    console.error('Contract code not found or an error occurred.');
+  }
+} catch (error) {
+  console.error(`Error retrieving contract code: ${error.message}`);
+}
+```
+
+#### Defined in
+
+[src/sdk/contract-sdk.ts:233](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L233)
+
+___
+
+### contractInfo
+
+▸ **contractInfo**(`contractAddress`): `Promise`<{ `ledgerSeq`: `number` ; `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer`  }\>
+
+Retrieves information about the contract with the specified contract address.
+
+This method retrieves information such as the Wasm ID, last modified ledger sequence number, and storage elements of the contract
+with the specified contract address using a Sorosan contract instance and the Soroban RPC server.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `contractAddress` | `string` | The address of the contract for which to retrieve information. |
+
+#### Returns
+
+`Promise`<{ `ledgerSeq`: `number` ; `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer`  }\>
+
+- A promise that resolves to an object containing the Wasm ID, last modified ledger sequence number, and storage elements of the contract.
+
+**`Example`**
+
+```ts
+const contractAddress: string;
+const contractInfo = await SorosanContract.contractInfo(contractAddress);
+console.log('Contract info:', contractInfo);
+```
+
+#### Defined in
+
+[src/sdk/contract-sdk.ts:165](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L165)
+
+___
+
+### contractInfoByAddress
+
+▸ **contractInfoByAddress**(`contractId`): `Promise`<{ `ledgerSeq`: `number` ; `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer`  }\>
+
+Retrieves information about the contract with the specified contract ID.
+
+This method retrieves information about the contract with the specified contract ID by first obtaining the contract address and then
+retrieving the contract information using the `contractInfo` method.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `contractId` | `string` | The ID of the contract for which to retrieve information. |
+
+#### Returns
+
+`Promise`<{ `ledgerSeq`: `number` ; `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer`  }\>
+
+- A promise that resolves to an object containing the Wasm ID, last modified ledger sequence number, and storage elements of the contract.
+
+**`Example`**
+
+```ts
+const contractId: string;
+const contractInfo = await SorosanContract.contractInfoByAddress(contractId);
+console.log('Contract info:', contractInfo);
+```
+
+#### Defined in
+
+[src/sdk/contract-sdk.ts:193](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L193)
 
 ___
 
@@ -143,13 +282,13 @@ const enums = specs.filter(x => x.switch() === xdr.ScSpecEntryKind.scSpecEntryUd
 
 #### Defined in
 
-[contract-sdk.ts:398](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L398)
+[src/sdk/contract-sdk.ts:399](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L399)
 
 ___
 
 ### deploy
 
-▸ **deploy**(`wasmId`, `publicKey`): `Promise`<`string`\>
+▸ **deploy**(`wasmId`, `publicKey`): `Promise`<`DeploymentResponse`\>
 
 Deploys a smart contract with a specified Wasm ID to the blockchain.
 
@@ -162,7 +301,7 @@ Deploys a smart contract with a specified Wasm ID to the blockchain.
 
 #### Returns
 
-`Promise`<`string`\>
+`Promise`<`DeploymentResponse`\>
 
 - The unique identifier (Contract ID) of the deployed contract.
 
@@ -175,7 +314,7 @@ If the deployment process encounters an error.
 ```ts
 // Deploy a contract using a Wasm ID and the contract deployer's public key.
 const wasmId = '706ac9480880242cd030a5efeb060d86f51627fb8488f5e78660a7f175b85fe1'; // Replace with the actual Wasm ID.
-const publicKey = 'GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL'; // Replace with the actual public key.
+const publicKey = 'GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF'; // Replace with the actual public key.
 
 try {
   const contractId = await sdk.contract.deploy(wasmId, publicKey);
@@ -187,13 +326,13 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:89](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L89)
+[src/sdk/contract-sdk.ts:95](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L95)
 
 ___
 
 ### deployWasm
 
-▸ **deployWasm**(`wasmBlob`, `publicKey`): `Promise`<`string`\>
+▸ **deployWasm**(`wasmBlob`, `publicKey`): `Promise`<`DeploymentResponse`\>
 
 Deploys a WebAssembly (Wasm) smart contract to the blockchain.
 
@@ -206,7 +345,7 @@ Deploys a WebAssembly (Wasm) smart contract to the blockchain.
 
 #### Returns
 
-`Promise`<`string`\>
+`Promise`<`DeploymentResponse`\>
 
 - A promise that resolves to the unique identifier (Wasm ID) of the deployed contract.
 
@@ -219,7 +358,7 @@ If the deployment process encounters an error or if `wasm` or `publicKey` is fal
 ```ts
 // Deploy a Wasm contract using a Blob containing the contract code.
 const wasmBlob = new Blob([wasmBytes], { type: 'application/wasm' });
-const publicKey = 'GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL'; // Replace with the actual public key.
+const publicKey = 'GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF'; // Replace with the actual public key.
 
 try {
   const wasmId = await sdk.contract.deployWasm(wasmBlob, publicKey);
@@ -231,7 +370,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:45](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L45)
+[src/sdk/contract-sdk.ts:45](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L45)
 
 ___
 
@@ -276,152 +415,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:348](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L348)
-
-___
-
-### getContractCode
-
-▸ **getContractCode**(`wasmId`): `Promise`<``null`` \| { `wasmCode`: `string` ; `wasmCodeLedger`: `number`  }\>
-
-Retrieves the WebAssembly (Wasm) code of a smart contract by its Wasm ID.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `wasmId` | `Buffer` | The unique identifier (Wasm ID) of the contract. |
-
-#### Returns
-
-`Promise`<``null`` \| { `wasmCode`: `string` ; `wasmCodeLedger`: `number`  }\>
-
-- A promise that resolves to an object
-containing the Wasm code as a hexadecimal string and the ledger sequence number when the code was last modified.
-Returns `null` if the contract code is not found or if there is an error.
-
-**`Throws`**
-
-If there is an error in retrieving the contract code.
-
-**`Example`**
-
-```ts
-// Retrieve the Wasm code of a contract by its Wasm ID.
-const wasmId = Buffer.from('abcdef123456', 'hex'); // Replace with the actual Wasm ID.
-
-try {
-  const contractCode = await sdk.contract.getContractCode(wasmId);
-  if (contractCode) {
-    console.log(`Contract code: ${contractCode.wasmCode}`);
-    console.log(`Last modified ledger: ${contractCode.wasmCodeLedger}`);
-  } else {
-    console.error('Contract code not found or an error occurred.');
-  }
-} catch (error) {
-  console.error(`Error retrieving contract code: ${error.message}`);
-}
-```
-
-#### Defined in
-
-[contract-sdk.ts:224](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L224)
-
-___
-
-### getContractData
-
-▸ **getContractData**(`contractAddress`): `Promise`<``null`` \| { `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer` ; `wasmIdLedger`: `undefined` \| `number`  }\>
-
-Retrieves contract data from Soroban blockchain, including wasmId, wasmIdLedger, and storage.
-Use getContractDataByContractHash(contractId) if you have the contract hash.
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `contractAddress` | `string` |
-
-#### Returns
-
-`Promise`<``null`` \| { `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer` ; `wasmIdLedger`: `undefined` \| `number`  }\>
-
-A Promise that resolves to an object containing wasmId, wasmIdLedger, and storage, or null if no data is found.
-
-**`Throws`**
-
-If an error occurs during contract data retrieval.
-
-**`Example`**
-
-```ts
-const contractAddress = 'CAZNM4AAQCQPUQGR72MIC7NPWHZBDOQKZBUQ3WTULIDALOWMOG23L6JT'; // Replace with the actual contract identifier.
-
-try {
-  const contractData = await sdk.contract.getContractData(contractAddress);
-  if (contractData) {
-    console.log('Contract WASM ID:', contractData.wasmId);
-    console.log('WASM ID Ledger:', contractData.wasmIdLedger);
-    console.log('Contract Storage:', contractData.storage);
-  } else {
-    console.log('Contract data not found.');
-  }
-} catch (error) {
-  console.error('Error:', error.message);
-}
-```
-
-#### Defined in
-
-[contract-sdk.ts:130](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L130)
-
-___
-
-### getContractDataByContractHash
-
-▸ **getContractDataByContractHash**(`contractId`): `Promise`<``null`` \| { `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer` ; `wasmIdLedger`: `undefined` \| `number`  }\>
-
-Retrieves contract data from Soroban blockchain, including wasmId, wasmIdLedger, and storage.
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `contractId` | `string` | The identifier of the contract to retrieve data for. |
-
-#### Returns
-
-`Promise`<``null`` \| { `storage`: readonly `StorageElement`[] ; `wasmId`: `Buffer` ; `wasmIdLedger`: `undefined` \| `number`  }\>
-
-A Promise that resolves to an object containing wasmId, wasmIdLedger, and storage, or null if no data is found.
-
-**`Throws`**
-
-If an error occurs during contract data retrieval.
-
-**`Example`**
-
-```ts
-const contractAddress = 'CAZNM4AAQCQPUQGR72MIC7NPWHZBDOQKZBUQ3WTULIDALOWMOG23L6JT'; // Replace with the actual contract identifier.
-const contractId = sdk.getContractHash(contractAddress);
-
-try {
-  const contractData = await sdk.contract.getContractDataByContractHash(contractId);
-  if (contractData) {
-    console.log('Contract WASM ID:', contractData.wasmId);
-    console.log('WASM ID Ledger:', contractData.wasmIdLedger);
-    console.log('Contract Storage:', contractData.storage);
-  } else {
-    console.log('Contract data not found.');
-  }
-} catch (error) {
-  console.error('Error:', error.message);
-}
-```
-
-#### Defined in
-
-[contract-sdk.ts:193](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L193)
+[src/sdk/contract-sdk.ts:349](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L349)
 
 ___
 
@@ -462,7 +456,7 @@ and submitting it to the blockchain. It returns a boolean value indicating the s
 const contractAddress = 'CDDKJMTAENCOVJPUWTISOQ23JYSMCLEOKXT7VEVZJWLYZ3PKLNRBXJ5C';
 const method = 'initialise'; // Replace with the name of the contract method.
 const args = [
-  sdk.nativeToScVal("GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL", 'address')
+  sdk.nativeToScVal("GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF", 'address')
   sdk.nativeToScVal("Token SS")
   sdk.nativeToScVal("SS")
   sdk.nativeToScVal(18, 'i32'),
@@ -482,7 +476,7 @@ try {
 
 #### Defined in
 
-[contract-sdk.ts:288](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L288)
+[src/sdk/contract-sdk.ts:293](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L293)
 
 ___
 
@@ -515,13 +509,47 @@ console.log(`Is valid contract hash: ${isValid}`);
 
 #### Defined in
 
-[contract-sdk.ts:497](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L497)
+[src/sdk/contract-sdk.ts:484](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L484)
+
+___
+
+### load
+
+▸ **load**(`contractAddress`): [`SorosanContract`](SorosanContract.md)
+
+Loads a Sorosan contract instance with the specified contract address.
+
+This method creates and returns a new Sorosan contract instance using the provided contract address.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `contractAddress` | `string` | The address of the contract to load. |
+
+#### Returns
+
+[`SorosanContract`](SorosanContract.md)
+
+- The Sorosan contract instance loaded with the specified contract address.
+
+**`Example`**
+
+```ts
+const contractAddress: string;
+const contract = SorosanContract.load(contractAddress);
+console.log('Loaded contract:', contract);
+```
+
+#### Defined in
+
+[src/sdk/contract-sdk.ts:129](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L129)
 
 ___
 
 ### restore
 
-▸ **restore**(`contractAddress`): `Promise`<`boolean`\>
+▸ **restore**(`contractAddress`): `Promise`<`GetTransactionResponse`\>
 
 Restores a Soroban smart contract with the given contract address.
 
@@ -535,7 +563,7 @@ This function initiates the restoration process for a Soroban smart contract by 
 
 #### Returns
 
-`Promise`<`boolean`\>
+`Promise`<`GetTransactionResponse`\>
 
 Returns `true` if the contract restoration is successful, `false` otherwise.
 
@@ -546,21 +574,45 @@ Throws an error if any part of the restoration process fails.
 **`Example`**
 
 ```ts
-const contractAddressToRestore = 'GCLFWWP6C3C5ILOVECODE12345'; // Replace with your actual contract address.
-
-try {
-  const isRestored = await sdk.contract.restore(contractAddressToRestore);
-
-  if (isRestored) {
-    console.log('Contract successfully restored.');
-  } else {
-    console.error('Contract restoration failed.');
-  }
-} catch (error) {
-  console.error('An error occurred during contract restoration:', error.message);
-}
+const contractAddressToRestore; // Replace with your actual contract address.
+const response: SorobanRpc.Api.GetTransactionResponse = await sdk.contract.restore(contractAddressToRestore);
+console.log(response.status);
 ```
 
 #### Defined in
 
-[contract-sdk.ts:446](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/contract-sdk.ts#L446)
+[src/sdk/contract-sdk.ts:419](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L419)
+
+___
+
+### wasmId
+
+▸ **wasmId**(`contractAddress`): `Promise`<`Buffer`\>
+
+Retrieves the WebAssembly (Wasm) ID of the contract with the specified contract address.
+
+This method retrieves the Wasm ID of the contract with the specified contract address using a Sorosan contract instance and the Soroban RPC server.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `contractAddress` | `string` | The address of the contract for which to retrieve the Wasm ID. |
+
+#### Returns
+
+`Promise`<`Buffer`\>
+
+- A promise that resolves to the Wasm ID of the contract.
+
+**`Example`**
+
+```ts
+const contractAddress: string;
+const wasmId = await SorosanContract.wasmId(contractAddress);
+console.log('Wasm ID:', wasmId.toString('hex'));
+```
+
+#### Defined in
+
+[src/sdk/contract-sdk.ts:146](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/contract-sdk.ts#L146)

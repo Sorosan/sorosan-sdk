@@ -1,20 +1,20 @@
-import { Account, Contract, SorobanRpc, scValToNative, xdr } from 'stellar-sdk';
-import { NetworkDetails } from '../lib/network';
+import { Account, Contract, SorobanDataBuilder, SorobanRpc, Transaction, scValToNative, xdr } from 'stellar-sdk';
+import { NetworkDetails } from 'lib/network';
 import {
-    bumpContractInstance,
-    createContractOp,
-    decodeContractSpecBuffer,
+    TransactionResponse,
     getContractAddress,
     isContractHash,
-    prepareContractCall,
-    restoreContract,
     signTransactionWithWallet,
     submitTx,
-    submitTxAndGetContractId,
-    submitTxAndGetWasmId,
-    uploadContractWasmOp
-} from '../lib/soroban';
-import { Soroban } from './soroban';
+} from 'lib/soroban';
+import { Soroban } from 'sdk/soroban';
+import { Buffer } from 'buffer';
+import { SorosanContract, StorageElement } from 'sdk/classes/sorosan-contract';
+
+interface DeploymentResponse {
+    reciept: SorobanRpc.Api.GetTransactionResponse,
+    payload: string,
+}
 
 export class ContractSDK extends Soroban {
     constructor(selectedNetwork: NetworkDetails, activePublicKey?: string) {
@@ -33,7 +33,7 @@ export class ContractSDK extends Soroban {
      * @example
      * // Deploy a Wasm contract using a Blob containing the contract code.
      * const wasmBlob = new Blob([wasmBytes], { type: 'application/wasm' });
-     * const publicKey = 'GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL'; // Replace with the actual public key.
+     * const publicKey = 'GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF'; // Replace with the actual public key.
      *
      * try {
      *   const wasmId = await sdk.contract.deployWasm(wasmBlob, publicKey);
@@ -42,7 +42,7 @@ export class ContractSDK extends Soroban {
      *   console.error(`Contract deployment failed: ${error.message}`);
      * }
      */
-    async deployWasm(wasmBlob: Blob, publicKey: string): Promise<string> {
+    async deployWasm(wasmBlob: Blob, publicKey: string): Promise<DeploymentResponse> {
         if (!publicKey) {
             return Promise.reject("Invalid or Missing public key");
         }
@@ -55,14 +55,20 @@ export class ContractSDK extends Soroban {
             throw new Error("Invalid wasm type. Expected 'application/wasm'.");
         }
 
-        const arrayBuffer = await wasmBlob.arrayBuffer();
-        const contract = Buffer.from(arrayBuffer);
-        const txBuilder = await this.initaliseTransactionBuilder(publicKey);
-        const tx = await uploadContractWasmOp(contract, txBuilder, this.server);
-        const ret = await signTransactionWithWallet(tx.toXDR(), publicKey, this.selectedNetwork);
-        const wasmId = await submitTxAndGetWasmId(ret, this.server, this.selectedNetwork);
+        const contract = Buffer.from(await wasmBlob.arrayBuffer());
+        const txBuilder = await this.initaliseTransactionBuilder(publicKey)
+        const tx: Transaction = await txBuilder
+            .uploadContractWasmOp(contract)
+            .buildAndPrepare(this.server);
 
-        return wasmId;
+        const ret = await signTransactionWithWallet(tx.toXDR(), publicKey, this.selectedNetwork);
+        if (ret.status) {
+            return Promise.reject("Transaction signing failed");
+        }
+        const reciept = await submitTx(ret.tx, this.server, this.selectedNetwork);
+        const payload = TransactionResponse.contractId(reciept);    // WasmID
+
+        return { reciept, payload };
     }
 
     /**
@@ -77,7 +83,7 @@ export class ContractSDK extends Soroban {
      * @example
      * // Deploy a contract using a Wasm ID and the contract deployer's public key.
      * const wasmId = '706ac9480880242cd030a5efeb060d86f51627fb8488f5e78660a7f175b85fe1'; // Replace with the actual Wasm ID.
-     * const publicKey = 'GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL'; // Replace with the actual public key.
+     * const publicKey = 'GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF'; // Replace with the actual public key.
      *
      * try {
      *   const contractId = await sdk.contract.deploy(wasmId, publicKey);
@@ -86,144 +92,147 @@ export class ContractSDK extends Soroban {
      *   console.error(`Contract deployment failed: ${error.message}`);
      * }
      */
-    async deploy(wasmId: string, publicKey: string): Promise<string> {
+    async deploy(wasmId: string, publicKey: string): Promise<DeploymentResponse> {
         const txBuilder = await this.initaliseTransactionBuilder(publicKey);
         const source: Account = await this.server.getAccount(publicKey);
-
-        const tx = await createContractOp(
-            wasmId,
-            source,
-            txBuilder,
-            this.server);
+        const tx: Transaction = await txBuilder
+            .createContractOp(wasmId, source)
+            .buildAndPrepareAsTransaction(this.server);
 
         const ret = await signTransactionWithWallet(tx.toXDR(), publicKey, this.selectedNetwork);
-        const contractId = await submitTxAndGetContractId(ret, this.server, this.selectedNetwork);
+        if (ret.status) {
+            return Promise.reject("Transaction signing failed");
+        }
 
-        return contractId;
+        const reciept = await submitTx(ret.tx, this.server, this.selectedNetwork);
+        const payload = TransactionResponse.contractId(reciept);    // contractID
+
+        return {
+            reciept,
+            payload
+        };
     }
 
     /**
-     * Retrieves contract data from Soroban blockchain, including wasmId, wasmIdLedger, and storage.
-     * Use getContractDataByContractHash(contractId) if you have the contract hash.
+     * Loads a Sorosan contract instance with the specified contract address.
+     *
+     * This method creates and returns a new Sorosan contract instance using the provided contract address.
+     *
+     * @param {string} contractAddress - The address of the contract to load.
+     * @returns {SorosanContract} - The Sorosan contract instance loaded with the specified contract address.
      * 
-     * @param {string} contractId - The identifier of the contract to retrieve data for.
-     * @returns {Promise<{ wasmId: string, wasmIdLedger: number, storage: any[] } | null>} A Promise that resolves to an object containing wasmId, wasmIdLedger, and storage, or null if no data is found.
-     *
-     * @throws {Error} If an error occurs during contract data retrieval.
-     *
      * @example
-     * const contractAddress = 'CAZNM4AAQCQPUQGR72MIC7NPWHZBDOQKZBUQ3WTULIDALOWMOG23L6JT'; // Replace with the actual contract identifier.
-     *
-     * try {
-     *   const contractData = await sdk.contract.getContractData(contractAddress);
-     *   if (contractData) {
-     *     console.log('Contract WASM ID:', contractData.wasmId);
-     *     console.log('WASM ID Ledger:', contractData.wasmIdLedger);
-     *     console.log('Contract Storage:', contractData.storage);
-     *   } else {
-     *     console.log('Contract data not found.');
-     *   }
-     * } catch (error) {
-     *   console.error('Error:', error.message);
-     * }
+     * const contractAddress: string;
+     * const contract = SorosanContract.load(contractAddress);
+     * console.log('Loaded contract:', contract);
      */
-    async getContractData(contractAddress: string) {
-        const ledgerKey = xdr.LedgerKey.contractData(
-            new xdr.LedgerKeyContractData({
-                contract: new Contract(contractAddress).address().toScAddress(),
-                key: xdr.ScVal.scvLedgerKeyContractInstance(),
-                durability: xdr.ContractDataDurability.persistent()
-            })
-        );
-
-        let ledgerEntries;
-        try {
-            ledgerEntries = await this.server.getLedgerEntries(ledgerKey);
-        } catch (error) {
-            console.error(error);
-        }
-
-        if (ledgerEntries == null || ledgerEntries.entries == null || ledgerEntries.entries.length == 0) {
-            return null;
-        }
-
-        const ledgerEntry = ledgerEntries.entries[0] as SorobanRpc.Api.LedgerEntryResult;
-
-        // const codeData = xdr.LedgerEntryData
-        //     .fromXDR(ledgerEntry.xdr, 'base64')
-        //     .contractData();
-        const codeData = ledgerEntry.val.contractData();
-
-        const wasmIdLedger = ledgerEntry.lastModifiedLedgerSeq;
-
-        const contractInstance = codeData.val().instance();
-        const wasmId = contractInstance.executable().wasmHash();
-
-        const contractStorage = contractInstance.storage();
-        const storage = contractStorage ? this.convertStorage(contractStorage) : [];
-
-        return { wasmId, wasmIdLedger, storage };
+    load(contractAddress: string): SorosanContract {
+        return new SorosanContract(contractAddress);
     }
 
     /**
-     * Retrieves contract data from Soroban blockchain, including wasmId, wasmIdLedger, and storage.
+     * Retrieves the WebAssembly (Wasm) ID of the contract with the specified contract address.
      *
-     * @param {string} contractId - The identifier of the contract to retrieve data for.
-     * @returns {Promise<{ wasmId: string, wasmIdLedger: number, storage: any[] } | null>} A Promise that resolves to an object containing wasmId, wasmIdLedger, and storage, or null if no data is found.
+     * This method retrieves the Wasm ID of the contract with the specified contract address using a Sorosan contract instance and the Soroban RPC server.
      *
-     * @throws {Error} If an error occurs during contract data retrieval.
-     *
-     * @example
-     * const contractAddress = 'CAZNM4AAQCQPUQGR72MIC7NPWHZBDOQKZBUQ3WTULIDALOWMOG23L6JT'; // Replace with the actual contract identifier.
-     * const contractId = sdk.getContractHash(contractAddress);
+     * @param {string} contractAddress - The address of the contract for which to retrieve the Wasm ID.
+     * @returns {Promise<Buffer>} - A promise that resolves to the Wasm ID of the contract.
      * 
-     * try {
-     *   const contractData = await sdk.contract.getContractDataByContractHash(contractId);
-     *   if (contractData) {
-     *     console.log('Contract WASM ID:', contractData.wasmId);
-     *     console.log('WASM ID Ledger:', contractData.wasmIdLedger);
-     *     console.log('Contract Storage:', contractData.storage);
-     *   } else {
-     *     console.log('Contract data not found.');
-     *   }
-     * } catch (error) {
-     *   console.error('Error:', error.message);
-     * }
+     * @example
+     * const contractAddress: string;
+     * const wasmId = await SorosanContract.wasmId(contractAddress);
+     * console.log('Wasm ID:', wasmId.toString('hex'));
      */
-    async getContractDataByContractHash(contractId: string) {
+    async wasmId(contractAddress: string): Promise<Buffer> {
+        const contract = new SorosanContract(contractAddress);
+        return contract.wasmId(this.server);
+    }
+
+    /**
+     * Retrieves information about the contract with the specified contract address.
+     *
+     * This method retrieves information such as the Wasm ID, last modified ledger sequence number, and storage elements of the contract
+     * with the specified contract address using a Sorosan contract instance and the Soroban RPC server.
+     *
+     * @param {string} contractAddress - The address of the contract for which to retrieve information.
+     * @returns {Promise<any>} - A promise that resolves to an object containing the Wasm ID, last modified ledger sequence number, and storage elements of the contract.
+     * 
+     * @example
+     * const contractAddress: string;
+     * const contractInfo = await SorosanContract.contractInfo(contractAddress);
+     * console.log('Contract info:', contractInfo);
+     */
+    async contractInfo(contractAddress: string):
+        Promise<{
+            wasmId: Buffer,
+            ledgerSeq: number,
+            storage: ReadonlyArray<StorageElement>
+        }> {
+        const contract = new SorosanContract(contractAddress);
+        const wasmId = await contract.wasmId(this.server);
+        const ledgerSeq = await contract.wasmIdLedgerSeq(this.server);
+        const storage = await contract.storage(this.server);
+
+        return { wasmId, ledgerSeq, storage };
+    }
+
+    /**
+     * Retrieves information about the contract with the specified contract ID.
+     *
+     * This method retrieves information about the contract with the specified contract ID by first obtaining the contract address and then
+     * retrieving the contract information using the `contractInfo` method.
+     *
+     * @param {string} contractId - The ID of the contract for which to retrieve information.
+     * @returns {Promise<any>} - A promise that resolves to an object containing the Wasm ID, last modified ledger sequence number, and storage elements of the contract.
+     * 
+     * @example
+     * const contractId: string;
+     * const contractInfo = await SorosanContract.contractInfoByAddress(contractId);
+     * console.log('Contract info:', contractInfo);
+     */
+    async contractInfoByAddress(contractId: string) {
         const contractAddress = getContractAddress(contractId);
-        return await this.getContractData(contractAddress);
+        return await this.contractInfo(contractAddress);
+    }
+
+    async contractCodeByAddress(contractAddress: string):
+        Promise<{ code: string, ledgerSeq: number } | null> {
+        const contract = new SorosanContract(contractAddress);
+        const code = await contract.code(this.server);
+        const ledgerSeq = await contract.wasmCodeLedgerSeq(this.server);
+
+        return { code, ledgerSeq };
     }
 
     /**
-     * Retrieves the WebAssembly (Wasm) code of a smart contract by its Wasm ID.
-     *
-     * @param {Buffer} wasmId - The unique identifier (Wasm ID) of the contract.
-     * @returns {Promise<{ wasmCode: string, wasmCodeLedger: number } | null>} - A promise that resolves to an object
-     * containing the Wasm code as a hexadecimal string and the ledger sequence number when the code was last modified.
-     * Returns `null` if the contract code is not found or if there is an error.
-     *
-     * @throws {Error} If there is an error in retrieving the contract code.
-     *
-     * @example
-     * // Retrieve the Wasm code of a contract by its Wasm ID.
-     * const wasmId = Buffer.from('abcdef123456', 'hex'); // Replace with the actual Wasm ID.
-     *
-     * try {
-     *   const contractCode = await sdk.contract.getContractCode(wasmId);
-     *   if (contractCode) {
-     *     console.log(`Contract code: ${contractCode.wasmCode}`);
-     *     console.log(`Last modified ledger: ${contractCode.wasmCodeLedger}`);
-     *   } else {
-     *     console.error('Contract code not found or an error occurred.');
-     *   }
-     * } catch (error) {
-     *   console.error(`Error retrieving contract code: ${error.message}`);
-     * }
-     */
-    async getContractCode(
+* Retrieves the WebAssembly (Wasm) code of a smart contract by its Wasm ID.
+*
+* @param {Buffer} wasmId - The unique identifier (Wasm ID) of the contract.
+* @returns {Promise<{ wasmCode: string, wasmCodeLedger: number } | null>} - A promise that resolves to an object
+* containing the Wasm code as a hexadecimal string and the ledger sequence number when the code was last modified.
+* Returns `null` if the contract code is not found or if there is an error.
+*
+* @throws {Error} If there is an error in retrieving the contract code.
+*
+* @example
+* // Retrieve the Wasm code of a contract by its Wasm ID.
+* const wasmId = Buffer.from('abcdef123456', 'hex'); // Replace with the actual Wasm ID.
+*
+* try {
+*   const contractCode = await sdk.contract.getContractCode(wasmId);
+*   if (contractCode) {
+*     console.log(`Contract code: ${contractCode.wasmCode}`);
+*     console.log(`Last modified ledger: ${contractCode.wasmCodeLedger}`);
+*   } else {
+*     console.error('Contract code not found or an error occurred.');
+*   }
+* } catch (error) {
+*   console.error(`Error retrieving contract code: ${error.message}`);
+* }
+*/
+    async contractCodeByWasm(
         wasmId: Buffer
-    ): Promise<{ wasmCode: string, wasmCodeLedger: number } | null> {
+    ): Promise<{ code: string, ledgerSeq: number } | null> {
         const ledgerKey = xdr.LedgerKey.contractCode(
             new xdr.LedgerKeyContractCode({
                 hash: wasmId
@@ -231,21 +240,17 @@ export class ContractSDK extends Soroban {
         );
 
         const ledgerEntries = await this.server.getLedgerEntries(ledgerKey);
-
         if (ledgerEntries == null || ledgerEntries.entries == null) {
-            return null;
+            return { code: "", ledgerSeq: 0 };
         }
 
         const ledgerEntry = ledgerEntries.entries[0] as SorobanRpc.Api.LedgerEntryResult;
-
-        const wasmCodeLedger = ledgerEntry.lastModifiedLedgerSeq as number;
-
+        const ledgerSeq = ledgerEntry.lastModifiedLedgerSeq as number;
         // const codeEntry = xdr.LedgerEntryData.fromXDR(ledgerEntry.xdr, 'base64');
         const codeEntry = ledgerEntry.val;
+        const code = codeEntry.contractCode().code().toString('hex');
 
-        const wasmCode = codeEntry.contractCode().code().toString('hex');
-
-        return { wasmCode, wasmCodeLedger };
+        return { code, ledgerSeq };
     }
 
     /**
@@ -268,7 +273,7 @@ export class ContractSDK extends Soroban {
      * const contractAddress = 'CDDKJMTAENCOVJPUWTISOQ23JYSMCLEOKXT7VEVZJWLYZ3PKLNRBXJ5C';
      * const method = 'initialise'; // Replace with the name of the contract method.
      * const args = [
-     *   sdk.nativeToScVal("GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL", 'address')
+     *   sdk.nativeToScVal("GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF", 'address')
      *   sdk.nativeToScVal("Token SS")
      *   sdk.nativeToScVal("SS")
      *   sdk.nativeToScVal(18, 'i32'),
@@ -292,16 +297,12 @@ export class ContractSDK extends Soroban {
     ) {
         const gas = await this.calculateEstimateGas(contractAddress, method, args);
         const txBuilder = await this.initaliseTransactionBuilder(this.publicKey, gas.toString());
-        const transaction = await prepareContractCall(
-            txBuilder,
-            this.server,
-            contractAddress,
-            method,
-            args
-        )
+        const tx: Transaction = await txBuilder
+            .invokeContractFunctionOp(contractAddress, method, args)
+            .buildAndPrepareAsTransaction(this.server);
 
         const signedTx = await signTransactionWithWallet(
-            transaction.toXDR(),
+            tx.toXDR(),
             this.publicKey!,
             this.selectedNetwork,
         )
@@ -396,26 +397,8 @@ export class ContractSDK extends Soroban {
      * const enums = specs.filter(x => x.switch() === xdr.ScSpecEntryKind.scSpecEntryUdtEnumV0());
      */
     async decompile(contractAddress: string): Promise<xdr.ScSpecEntry[]> {
-        // Get Contract Code (Wasm)
-        const data = await this.getContractData(contractAddress);
-        if (!data) {
-            return [];
-        }
-        const code = await this.getContractCode(data.wasmId);
-        const buffer = Buffer.from(code?.wasmCode || "", 'hex');
-
-        const executable = new WebAssembly.Module(buffer);
-        const contractSpecificationSection = WebAssembly.Module.customSections(executable, 'contractspecv0');
-
-        let totalEntries: xdr.ScSpecEntry[] = [];
-        for (const item of contractSpecificationSection) {
-            const entries = await decodeContractSpecBuffer(item);
-
-            entries.forEach((entry: xdr.ScSpecEntry) => {
-                totalEntries.push(entry);
-            });
-        }
-        return totalEntries;
+        const contract = new SorosanContract(contractAddress);
+        return await contract.specs(this.server);
     }
 
     /**
@@ -429,57 +412,61 @@ export class ContractSDK extends Soroban {
      * @throws {Error} Throws an error if any part of the restoration process fails.
      *
      * @example
-     * const contractAddressToRestore = 'GCLFWWP6C3C5ILOVECODE12345'; // Replace with your actual contract address.
-     *
-     * try {
-     *   const isRestored = await sdk.contract.restore(contractAddressToRestore);
-     *
-     *   if (isRestored) {
-     *     console.log('Contract successfully restored.');
-     *   } else {
-     *     console.error('Contract restoration failed.');
-     *   }
-     * } catch (error) {
-     *   console.error('An error occurred during contract restoration:', error.message);
-     * }
+     * const contractAddressToRestore; // Replace with your actual contract address.
+     * const response: SorobanRpc.Api.GetTransactionResponse = await sdk.contract.restore(contractAddressToRestore);
+     * console.log(response.status);
      */
-    async restore(contractAddress: string) {
+    async restore(contractAddress: string): Promise<SorobanRpc.Api.GetTransactionResponse> {
         const ledger = await this.server.getLatestLedger();
 
         if (!ledger) {
-            return false;
+            return {
+                status: SorobanRpc.Api.GetTransactionStatus.NOT_FOUND
+            } as SorobanRpc.Api.GetMissingTransactionResponse;
         }
 
         const txBuilder = await this.initaliseTransactionBuilder(this.publicKey, '1000000');
 
-        try {
-            const transaction = await bumpContractInstance(
-                txBuilder,
-                this.server,
-                contractAddress,
-                ledger.sequence + 10000,
-                this.publicKey);
+        const ledgerKey = xdr.LedgerKey.contractData(
+            new xdr.LedgerKeyContractData({
+                contract: new Contract(contractAddress).address().toScAddress(),
+                key: xdr.ScVal.scvLedgerKeyContractInstance(),
+                durability: xdr.ContractDataDurability.persistent()
+            })
+        );
 
-            const signedTx = await signTransactionWithWallet(
-                transaction.toXDR(),
-                this.publicKey!,
-                this.selectedNetwork,
-            )
+        const ledgerEntries = await this.server.getLedgerEntries(ledgerKey);
+        const ledgerEntry = ledgerEntries.entries[0] as SorobanRpc.Api.LedgerEntryResult;
+        const hash = ledgerEntry.val.contractData().val().instance().executable().wasmHash();
+        const sorobanData = new SorobanDataBuilder()
+            .setReadWrite([
+                xdr.LedgerKey.contractCode(
+                    new xdr.LedgerKeyContractCode({ hash })
+                ),
+                ledgerKey
+            ])
+            .build()
 
-            if (signedTx.status) {
-                return false;
-            }
+        let tx: Transaction = await txBuilder
+            // .addOperation(Operation.bumpFootprintExpiration({ ledgersToExpire: 101 }))
+            .restoreFootprintOp()
+            .setNetworkPassphrase(this.selectedNetwork.networkPassphrase)
+            .setSorobanData(sorobanData)
+            .buildAndPrepareAsTransaction(this.server);
 
-            const gtr = await submitTx(signedTx.tx, this.server, this.selectedNetwork);
+        const signedTx = await signTransactionWithWallet(
+            tx.toXDR(),
+            this.publicKey!,
+            this.selectedNetwork,
+        )
 
-            if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
-                return true;
-            }
-        } catch (e) {
-            console.log(e);
+        if (signedTx.status) {
+            return {
+                status: SorobanRpc.Api.GetTransactionStatus.FAILED
+            } as SorobanRpc.Api.GetFailedTransactionResponse;
         }
 
-        return false;
+        return await submitTx(signedTx.tx, this.server, this.selectedNetwork);
     }
 
     /**
@@ -497,27 +484,4 @@ export class ContractSDK extends Soroban {
     isContractHash(val: string) {
         return isContractHash(val);
     }
-
-    /**
-     * @ignore
-     * Helper function that converts an array of Soroban storage entries (xdr.ScMapEntry) to an array of StorageElement objects.
-     *
-     * @param {ReadonlyArray<xdr.ScMapEntry>} storage - An array of Soroban storage entries.
-     * @returns {ReadonlyArray<StorageElement>} An array of StorageElement objects containing key-value pairs.
-     */
-    private convertStorage = (
-        storage: ReadonlyArray<xdr.ScMapEntry>
-    ): ReadonlyArray<StorageElement> => storage.map(el => ({
-        key: scValToNative(el.key()).toString(),
-        keyType: el.key().switch().name,
-        value: scValToNative(el.val()).toString(),
-        valueType: el.val().switch().name,
-    }))
-}
-
-interface StorageElement {
-    key: string
-    keyType: string
-    value: string
-    valueType: string
 }

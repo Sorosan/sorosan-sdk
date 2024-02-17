@@ -76,9 +76,8 @@ export const tipAccount = async (
  * @param {string} contractHash - The contract hash in hexadecimal format.
  * @returns {string} The Stellar contract address.
  */
-export const getContractAddress = (contractHash: string) => {
-    return StrKey.encodeContract(hexToByte(contractHash));
-}
+export const getContractAddress = (contractHash: string) =>
+    StrKey.encodeContract(hexToByte(contractHash));
 
 /**
  * Converts a Stellar contract ID to its corresponding contract hash in hexadecimal format.

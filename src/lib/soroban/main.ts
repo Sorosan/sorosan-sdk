@@ -4,6 +4,7 @@ import {
     Asset,
     Contract,
     Memo,
+    MuxedAccount,
     Operation,
     SorobanRpc,
     TimeoutInfinite,
@@ -14,12 +15,14 @@ import {
 const { Server } = SorobanRpc;
 
 import { NetworkDetails, RPC, getRPC } from "../network";
-import { Salt } from "./util";
-import ba from './binascii';
+import { SorosanTransactionBuilder } from "../../sdk/classes/sorosan-transaction-builder";
 
 export const BASE_FEE = "100";
 export const XLM_DECIMALS = 7;
-export const PLACEHOLDER_ACCOUNT = "GC5S4C6LMT6BCCARUCK5MOMAS4H7OABFSZG2SPYOGUN2KIHN5HNNMCGL"
+/**
+ * The placeholder account used calling gasless methods.
+ */
+export const PLACEHOLDER_ACCOUNT = "GDLEI7MS6EMTGHB7N5YHSVEMEWSWNUM4T77VDEGNTXSBRTIGMXUCE5GF"
 
 export const getServer = (networkDetails: NetworkDetails) =>
     new Server(getRPC(networkDetails) || RPC.Testnet, {
@@ -43,6 +46,27 @@ export const initaliseTransactionBuilder = async (
 ) => {
     const source = await server.getAccount(publicKey);
     return new TransactionBuilder(source, {
+        fee,
+        networkPassphrase,
+    });
+};
+
+/**
+ * This is in use as it allows for the creation of some operation that Soroban does not support.
+ * @param publicKey 
+ * @param fee 
+ * @param server 
+ * @param networkPassphrase 
+ * @returns 
+ */
+export const initaliseSorosanTransactionBuilder = async (
+    publicKey: string,
+    fee: string,
+    server: SorobanRpc.Server,
+    networkPassphrase: string,
+) => {
+    const source = await server.getAccount(publicKey);
+    return new SorosanTransactionBuilder(source, {
         fee,
         networkPassphrase,
     });
@@ -96,151 +120,3 @@ export const getEstimatedFee = async (
 
     return fee;
 };
-
-/**
- * Asynchronously prepares a transaction for invoking a method on a smart contract
- * on a blockchain network.
- *
- * @param {TransactionBuilder} txBuilder - The transaction builder instance used to construct the transaction.
- * @param {Server} server - The server instance used to prepare the transaction.
- * @param {string} contractAddress - The address of the smart contract to interact with.
- * @param {string} method - The name of the smart contract method to call.
- * @param {xdr.ScVal[]} args - An array of arguments to pass to the smart contract method.
- *
- * @returns {Promise<Transaction>} A promise that resolves to the prepared transaction.
- */
-export const prepareContractCall = async (
-    txBuilder: TransactionBuilder,
-    server: SorobanRpc.Server,
-    contractAddress: string,
-    method: string,
-    args: xdr.ScVal[]
-) => {
-    const contract = new Contract(contractAddress);
-    let tx: Transaction = txBuilder
-        .addOperation(contract.call(method, ...args))
-        .setTimeout(TimeoutInfinite)
-        .build();
-
-    tx = await server.prepareTransaction(tx) as Transaction;
-
-    return tx;
-}
-
-export const uploadContractWasmOp = async (
-    value: Buffer,
-    txBuilder: TransactionBuilder,
-    server: SorobanRpc.Server,
-) => {
-    let hf: xdr.HostFunction = xdr.HostFunction.hostFunctionTypeUploadContractWasm(value);
-    let op: any = Operation.invokeHostFunction({
-        func: hf,
-        auth: [],
-    });
-
-    let tx: Transaction = txBuilder
-        .addOperation(op)
-        .setTimeout(TimeoutInfinite)
-        .build();
-
-    const prepared = await server.prepareTransaction(tx) as Transaction;
-    return prepared;
-};
-
-export const createContractOp = async (
-    wasmId: string,
-    source: Account,
-    txBuilder: TransactionBuilder,
-    server: SorobanRpc.Server,
-) => {
-    wasmId = ba.unhexlify(wasmId);
-    const wasmIdBuffer = Buffer.from(wasmId, "ascii");
-    const salt = Salt(32);
-    const buff = Buffer.from(salt);
-    const addr = new Address(source.accountId());
-    // const contractIdPreimage = xdr.ContractIdPreimage
-    // .contractIdPreimageFromAsset(xdr.Asset.assetTypeNative());
-
-    const contractIdPreimageFromAddress = new xdr.ContractIdPreimageFromAddress({
-        address: addr.toScAddress(),
-        salt: buff,
-    });
-    const contractIdPreimage = xdr.ContractIdPreimage
-        .contractIdPreimageFromAddress(contractIdPreimageFromAddress);
-
-    const createContract = new xdr.CreateContractArgs({
-        contractIdPreimage: contractIdPreimage,
-        executable: xdr.ContractExecutable.contractExecutableWasm(wasmIdBuffer),
-    });
-
-    let hf: xdr.HostFunction = xdr.HostFunction
-        .hostFunctionTypeCreateContract(createContract);
-    let op: any = Operation.invokeHostFunction({
-        func: hf,
-        auth: [],
-    });
-    let tx: Transaction = txBuilder
-        .addOperation(op)
-        .setTimeout(TimeoutInfinite)
-        .build();
-
-    tx = await server.prepareTransaction(tx) as Transaction;
-
-    return tx;
-}
-
-export const createWrapTokenOp = async (
-    txBuilder: TransactionBuilder,
-    server: SorobanRpc.Server,
-    asset: Asset,
-    contractId: string,
-) => {
-    const addr = new Address(contractId);
-
-    const ledgerKey = new xdr.LedgerKeyContractData({
-        contract: addr.toScAddress(),
-        key: xdr.ScVal.scvLedgerKeyContractInstance(),
-        durability: xdr.ContractDataDurability.persistent(),
-        // bodyType: xdr.ContractEntryBodyType.dataEntry()
-    });
-
-    xdr.LedgerKey.contractData(ledgerKey);
-
-    const contractIdPreimageFromAddress = xdr.ContractIdPreimage
-        .contractIdPreimageFromAsset(asset.toXDRObject());
-    const contractArgs = new xdr.CreateContractArgs({
-        contractIdPreimage: contractIdPreimageFromAddress,
-        executable: xdr.ContractExecutable.contractExecutableStellarAsset(),
-    });
-
-    const hf = xdr.HostFunction.hostFunctionTypeCreateContract(contractArgs);
-    let op: any = Operation.invokeHostFunction({
-        func: hf,
-        auth: [],
-    });
-
-    let tx: Transaction = txBuilder
-        .addOperation(op)
-        .setTimeout(TimeoutInfinite)
-        .build();
-
-    tx = await server.prepareTransaction(tx) as Transaction;
-    return tx;
-}
-
-export const issueAssetToken = async (
-    txBuilder: TransactionBuilder,
-    asset: Asset,
-    limit: string,
-) => {
-    const op = Operation.changeTrust({
-        asset: asset,
-        limit: limit,
-    });
-    let tx: Transaction = txBuilder
-        .addOperation(op)
-        .setTimeout(TimeoutInfinite)
-        .build();
-
-    return tx;
-}

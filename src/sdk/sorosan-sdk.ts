@@ -1,19 +1,15 @@
-import { SorobanRpc, TransactionBuilder, xdr } from 'stellar-sdk';
-import BigNumber from 'bignumber.js';
+import { SorobanRpc, Transaction, TransactionBuilder, xdr } from 'stellar-sdk';
 import { NetworkDetails } from '../lib/network';
 import {
     CustomScVal,
     PLACEHOLDER_ACCOUNT,
     isListOfNumbers,
-    prepareContractCall,
     signTransactionWithWallet,
     simulateTx,
-    stroopToXlm,
     structNameToXdr,
     structUnnameToXdr,
     submitTx,
     toScVal,
-    xlmToStroop
 } from '../lib/soroban';
 import { Soroban } from './soroban';
 import { getPublicKey, getUserInfo, isAllowed, isConnected } from '@stellar/freighter-api';
@@ -30,7 +26,7 @@ export class SorosanSDK extends Soroban {
         super(selectedNetwork);
         this.contract = new ContractSDK(selectedNetwork, activePublicKey);
         this.token = new TokenSDK(selectedNetwork, activePublicKey);
-        this.util = new UtilSDK(selectedNetwork, activePublicKey);
+        this.util = new UtilSDK();
     }
 
     /**
@@ -53,23 +49,15 @@ export class SorosanSDK extends Soroban {
     async call(
         contractAddress: string,
         method: string,
-        args?: xdr.ScVal[],
+        args: xdr.ScVal[] = [],
     ) {
-        if (!args) args = [];
+        // Note: If the public key is not set, use the placeholder account
+        const txBuilder = await this.initaliseTransactionBuilder(this.publicKey || PLACEHOLDER_ACCOUNT);
+        const tx = await txBuilder
+            .invokeContractFunctionOp(contractAddress, method, args)
+            .buildAndPrepare(this.server);
 
-        // Call can use a dummy account to stimulate transaction
-        let pk = this.publicKey || PLACEHOLDER_ACCOUNT;
-
-        const txBuilder: TransactionBuilder = await this.initaliseTransactionBuilder(pk);
-        const transaction = await prepareContractCall(
-            txBuilder,
-            this.server,
-            contractAddress,
-            method,
-            args
-        )
-
-        const result = await simulateTx<any>(transaction, this.server);
+        const result = await simulateTx<any>(tx, this.server);
         return result;
     }
 
@@ -106,16 +94,12 @@ export class SorosanSDK extends Soroban {
         const gas = await this.calculateEstimateGas(contractAddress, method, args);
 
         const txBuilder = await this.initaliseTransactionBuilder(this.publicKey, gas.toString());
-        const transaction = await prepareContractCall(
-            txBuilder,
-            this.server,
-            contractAddress,
-            method,
-            args
-        )
+        const tx: Transaction = await txBuilder
+            .invokeContractFunctionOp(contractAddress, method, args)
+            .buildAndPrepareAsTransaction(this.server);
 
         const signedTx = await signTransactionWithWallet(
-            transaction.toXDR(),
+            tx.toXDR(),
             this.publicKey!,
             this.selectedNetwork,
         )
@@ -163,7 +147,7 @@ export class SorosanSDK extends Soroban {
         this.setPublicKey = userInfo.publicKey;
         this.contract = new ContractSDK(this.selectedNetwork, this.publicKey);
         this.token = new TokenSDK(this.selectedNetwork, this.publicKey);
-        this.util = new UtilSDK(this.selectedNetwork, this.publicKey);
+        this.util = new UtilSDK();
         return true;
     }
 
@@ -216,6 +200,15 @@ export class SorosanSDK extends Soroban {
         args: xdr.ScVal[]
     ): Promise<string> {
         return await this.calculateEstimateGas(contractAddress, method, args);
+    }
+
+    /**
+     * This value is an extension of TransactionBuilder and is used to create and prepare transactions
+     * It contains more methods than the TransactionBuilder and is used to interact with the Soroban network.
+     * @returns 
+     */
+    async transactionBuilder(publicKey?: string, fee?: string) {
+        return this.initaliseTransactionBuilder(publicKey || this.publicKey, fee);
     }
 
     /**
@@ -278,34 +271,6 @@ export class SorosanSDK extends Soroban {
         } else {
             return structNameToXdr(struct);
         }
-    }
-
-    /**
-    * Converts XLM (Lumen) to stroops (1 XLM = 10^7 stroops).
-    *
-    * @param {number} amount - The amount of XLM to convert.
-    * @returns {BigNumber} The equivalent amount in stroops as a BigNumber.
-    * @example
-    * const xlmAmount = 5.0; // Replace with the actual amount of XLM to convert.
-    * const stroops = sdk.toStroop(xlmAmount);
-    * console.log(`Equivalent in Stroops: ${stroops.toString()}`);
-    */
-    toStroop(amount: number): BigNumber {
-        return xlmToStroop(amount.toString());
-    }
-
-    /**
-     * Converts stroops to XLM (Lumen) (1 XLM = 10^7 stroops).
-     *
-     * @param {number} amount - The amount in stroops to convert.
-     * @returns {BigNumber} The equivalent amount in XLM as a BigNumber.
-     * @example
-     * const stroopsAmount = 50000000; // Replace with the actual amount in stroops to convert.
-     * const xlm = sdk.toXLM(stroopsAmount);
-     * console.log(`Equivalent in XLM: ${xlm.toString()}`);
-     */
-    toXLM(amount: number): BigNumber {
-        return stroopToXlm(BigNumber(amount));
     }
 }
 

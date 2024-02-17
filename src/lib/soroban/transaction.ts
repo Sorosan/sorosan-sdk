@@ -146,60 +146,40 @@ export const submitTx = async (
     }
 };
 
-export const submitTxAndGetContractId = async (
-    signed: { status: string, tx: string },
-    server: SorobanRpc.Server,
-    selectedNetwork: NetworkDetails,
-): Promise<string> => {
-    // If there is an error, the user likely canceled the transaction.
-    if (signed.status) {
-        return "";
-    }
 
-    try {
-        // Submit transaction
-        const gtr = await submitTx(signed.tx, server, selectedNetwork);
+export class TransactionResponse {
+    static contractId = (gtr: SorobanRpc.Api.GetTransactionResponse): string => {
         if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
             // const buff = Buffer.from(gtr.resultMetaXdr, "base64");
             const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
             const txMeta = xdr.TransactionMeta.fromXDR(buff);
             return txMeta.v3().sorobanMeta()?.returnValue().address().contractId().toString("hex") || "";
         }
-    } catch (e) {
-        console.error(e);
-    }
 
-    return "";
-}
-
-export const submitTxAndGetWasmId = async (
-    signed: { status: string, tx: string },
-    server: SorobanRpc.Server,
-    selectedNetwork: NetworkDetails,
-): Promise<string> => {
-    // If there is an error, the user likely canceled the transaction.
-    if (signed.status) {
-        console.log(signed.status);
         return "";
     }
 
-    let wasmId: string = "";
-    try {
-        // Submit transaction
-        const gtr = await submitTx(signed.tx, server, selectedNetwork);
-
-        // Get the wasmId
+    static wasmId = (gtr: SorobanRpc.Api.GetTransactionResponse): string => {
         if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
             const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
             const txMeta = xdr.TransactionMeta.fromXDR(buff);
             // const txMeta = xdr.TransactionMeta.fromXDR(getTXData.resultMetaXdr, "base64");
             return txMeta.v3().sorobanMeta()?.returnValue().bytes().toString("hex") || "";
         }
-    } catch (e) {
-        console.error(e);
+
+        return ""
     }
 
-    return "";
+    static scVal = (gtr: SorobanRpc.Api.GetTransactionResponse): xdr.ScVal => {
+        if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
+            const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
+            const txMeta = xdr.TransactionMeta.fromXDR(buff);
+            const result = txMeta.v3().sorobanMeta()?.returnValue() || xdr.ScVal.scvBool(true);
+            return result;
+        }
+
+        return xdr.ScVal.scvVoid();
+    }
 }
 
 

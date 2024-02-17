@@ -31,7 +31,7 @@ Soroban.constructor
 
 #### Defined in
 
-[sorosan-sdk.ts:29](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L29)
+[src/sdk/sorosan-sdk.ts:25](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L25)
 
 ## Properties
 
@@ -41,7 +41,7 @@ Soroban.constructor
 
 #### Defined in
 
-[sorosan-sdk.ts:25](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L25)
+[src/sdk/sorosan-sdk.ts:21](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L21)
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 #### Defined in
 
-[sorosan-sdk.ts:26](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L26)
+[src/sdk/sorosan-sdk.ts:22](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L22)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 #### Defined in
 
-[sorosan-sdk.ts:27](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L27)
+[src/sdk/sorosan-sdk.ts:23](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L23)
 
 ## Accessors
 
@@ -85,7 +85,7 @@ Soroban.setPublicKey
 
 #### Defined in
 
-[soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L100)
+[src/sdk/soroban.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/soroban.ts#L100)
 
 ## Methods
 
@@ -130,7 +130,7 @@ Soroban.calculateEstimateGas
 
 #### Defined in
 
-[soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/soroban.ts#L81)
+[src/sdk/soroban.ts:81](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/soroban.ts#L81)
 
 ___
 
@@ -143,11 +143,11 @@ prepares the transaction, and simulates it on the network.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `contractAddress` | `string` | - |
-| `method` | `string` | The name of the method to call on the contract. |
-| `args?` | `ScVal`[] | An array of ScVal arguments to pass to the method. |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `contractAddress` | `string` | `undefined` | - |
+| `method` | `string` | `undefined` | The name of the method to call on the contract. |
+| `args` | `ScVal`[] | `[]` | An array of ScVal arguments to pass to the method. |
 
 #### Returns
 
@@ -167,7 +167,7 @@ const result = await sdk.call(
 
 #### Defined in
 
-[sorosan-sdk.ts:53](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L53)
+[src/sdk/sorosan-sdk.ts:49](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L49)
 
 ___
 
@@ -186,7 +186,7 @@ Freighter is successful, otherwise `false`.
 
 #### Defined in
 
-[sorosan-sdk.ts:176](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L176)
+[src/sdk/sorosan-sdk.ts:160](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L160)
 
 ___
 
@@ -227,7 +227,7 @@ const gasCostInStroops: number = parseInt(gasEstimation);   // Convert to a numb
 
 #### Defined in
 
-[sorosan-sdk.ts:213](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L213)
+[src/sdk/sorosan-sdk.ts:197](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L197)
 
 ___
 
@@ -256,7 +256,7 @@ if (!hasFreighter) {
 
 #### Defined in
 
-[sorosan-sdk.ts:150](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L150)
+[src/sdk/sorosan-sdk.ts:134](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L134)
 
 ___
 
@@ -288,7 +288,7 @@ const hundred: xdr.scVal = sdk.nativeToScVal(100, "i128"),
 
 #### Defined in
 
-[sorosan-sdk.ts:248](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L248)
+[src/sdk/sorosan-sdk.ts:241](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L241)
 
 ___
 
@@ -318,7 +318,7 @@ You have to manually convert them.
 
 #### Defined in
 
-[sorosan-sdk.ts:229](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L229)
+[src/sdk/sorosan-sdk.ts:222](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L222)
 
 ___
 
@@ -359,7 +359,7 @@ const result = await sdk.send(
 
 #### Defined in
 
-[sorosan-sdk.ts:100](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L100)
+[src/sdk/sorosan-sdk.ts:88](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L88)
 
 ___
 
@@ -401,68 +401,28 @@ types.forEach((type) => {
 
 #### Defined in
 
-[sorosan-sdk.ts:273](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L273)
+[src/sdk/sorosan-sdk.ts:266](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L266)
 
 ___
 
-### toStroop
+### transactionBuilder
 
-▸ **toStroop**(`amount`): `BigNumber`
+▸ **transactionBuilder**(`publicKey?`, `fee?`): `Promise`<`SorosanTransactionBuilder`\>
 
-Converts XLM (Lumen) to stroops (1 XLM = 10^7 stroops).
-
-#### Parameters
-
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `amount` | `number` | The amount of XLM to convert. |
-
-#### Returns
-
-`BigNumber`
-
-The equivalent amount in stroops as a BigNumber.
-
-**`Example`**
-
-```ts
-const xlmAmount = 5.0; // Replace with the actual amount of XLM to convert.
-const stroops = sdk.toStroop(xlmAmount);
-console.log(`Equivalent in Stroops: ${stroops.toString()}`);
-```
-
-#### Defined in
-
-[sorosan-sdk.ts:293](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L293)
-
-___
-
-### toXLM
-
-▸ **toXLM**(`amount`): `BigNumber`
-
-Converts stroops to XLM (Lumen) (1 XLM = 10^7 stroops).
+This value is an extension of TransactionBuilder and is used to create and prepare transactions
+It contains more methods than the TransactionBuilder and is used to interact with the Soroban network.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `amount` | `number` | The amount in stroops to convert. |
+| Name | Type |
+| :------ | :------ |
+| `publicKey?` | `string` |
+| `fee?` | `string` |
 
 #### Returns
 
-`BigNumber`
-
-The equivalent amount in XLM as a BigNumber.
-
-**`Example`**
-
-```ts
-const stroopsAmount = 50000000; // Replace with the actual amount in stroops to convert.
-const xlm = sdk.toXLM(stroopsAmount);
-console.log(`Equivalent in XLM: ${xlm.toString()}`);
-```
+`Promise`<`SorosanTransactionBuilder`\>
 
 #### Defined in
 
-[sorosan-sdk.ts:307](https://github.com/Sorosan/sorosan-sdk/blob/37164b5/src/sdk/sorosan-sdk.ts#L307)
+[src/sdk/sorosan-sdk.ts:210](https://github.com/Sorosan/sorosan-sdk/blob/c05545a/src/sdk/sorosan-sdk.ts#L210)

@@ -37,6 +37,15 @@ const sidebars = {
         'api/classes/UtilSDK',
       ],
     },
+    {
+      type: 'category',
+      label: 'Extended Classes',
+      items: [
+        'api/classes/SorosanToken',
+        'api/classes/SorosanContract',
+        // 'api/classes/SorosanTransactionBuilder',
+      ],
+    },
   ],
 
 };

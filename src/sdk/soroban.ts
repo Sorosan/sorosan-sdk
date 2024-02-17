@@ -5,7 +5,7 @@ import {
     PLACEHOLDER_ACCOUNT,
     getEstimatedFee,
     getServer,
-    initaliseTransactionBuilder
+    initaliseSorosanTransactionBuilder,
 } from '../lib/soroban';
 
 export class Soroban {
@@ -49,7 +49,7 @@ export class Soroban {
         const network = await this.server.getNetwork();
 
         // Get the transaction builder
-        return await initaliseTransactionBuilder(
+        return await initaliseSorosanTransactionBuilder(
             usedPublicKey,
             fee ? fee.toString() : BASE_FEE,
             this.server,
