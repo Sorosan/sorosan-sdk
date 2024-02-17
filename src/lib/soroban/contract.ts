@@ -37,52 +37,6 @@ export const decodeContractSpecBuffer = async (buffer: ArrayBuffer) => {
 }
 
 /**
- * More Info: https://soroban-snippet.vercel.app/?title=943f3f9207e07751443699f1480500be3bb3636984aa19200452d49a7886cdc5
- * @param txBuilder 
- * @param server 
- * @param contractAddress 
- * @returns 
- */
-export async function restoreContract(
-    txBuilder: TransactionBuilder,
-    server: SorobanRpc.Server,
-    contractAddress: string,
-): Promise<Transaction> {
-    // Read Write
-    const network = (await server.getNetwork()).passphrase;
-    const ledgerKey = xdr.LedgerKey.contractData(
-        new xdr.LedgerKeyContractData({
-            contract: new Contract(contractAddress).address().toScAddress(),
-            key: xdr.ScVal.scvLedgerKeyContractInstance(),
-            durability: xdr.ContractDataDurability.persistent()
-        })
-    );
-
-    const ledgerEntries = await server.getLedgerEntries(ledgerKey);
-    const ledgerEntry = ledgerEntries.entries[0] as SorobanRpc.Api.LedgerEntryResult;
-    const hash = ledgerEntry.val.contractData().val().instance().executable().wasmHash();
-    const sorobanData = new SorobanDataBuilder()
-        .setReadWrite([
-            xdr.LedgerKey.contractCode(
-                new xdr.LedgerKeyContractCode({ hash })
-            ),
-            ledgerKey
-        ])
-        .build()
-
-    let tx: Transaction = txBuilder
-        // .addOperation(Operation.bumpFootprintExpiration({ ledgersToExpire: 101 }))
-        .addOperation(Operation.restoreFootprint({}))
-        .setNetworkPassphrase(network)
-        .setSorobanData(sorobanData)
-        .setTimeout(0)
-        .build()
-
-    tx = await server.prepareTransaction(tx) as Transaction;
-    return tx;
-}
-
-/**
  * To implementation to SDK
  * @param txBuilder 
  * @param server 
