@@ -1,8 +1,9 @@
 import { Account, Asset, SorobanRpc, Transaction, xdr } from 'stellar-sdk';
-import { NetworkDetails } from 'lib/network';
+import { Network, NetworkDetails } from 'lib/network';
 import {
     TransactionResponse,
     accountToScVal,
+    getAsset,
     getAssetContractId,
     getContractAddress,
     getTokenWasmId,
@@ -250,14 +251,18 @@ export class TokenSDK extends Soroban {
      *     console.error(`Failed to retrieve asset information: ${error.message}`);
      * }
      */
-    // async getAsset(contractAddress: string): Promise<Asset | null> {
-    //     try {
-    //         return await getAsset(contractAddress);
-    //     } catch (e) {
-    //         console.error(e);
-    //     }
-    //     return null;
-    // }
+    async getAssetFromContract(contractAddress: string): Promise<Asset | null> {
+        try {
+            if (this.selectedNetwork.network !== Network.testnet) {
+                throw new Error("Asset retrieval is only supported on the testnet network.");
+            }
+
+            return await getAsset(contractAddress);
+        } catch (e) {
+            console.error(e);
+        }
+        return null;
+    }
 
     /**
      * Checks if a contract address is associated with a wrapped asset.
@@ -279,17 +284,16 @@ export class TokenSDK extends Soroban {
      *     console.error(`Failed to determine if asset is wrapped: ${error.message}`);
      * }
      */
-    // async isWrapped(contractAddress: string): Promise<boolean> {
-    //     try {
-    //         const asset = await this.getAsset(contractAddress);
-    //         if (asset) {
-    //             return true;
-    //         }
-    //     } catch (e) {
-    //         console.error(e);
-    //     }
-    //     return false;
-    // }
+    async isWrapped(contractAddress: string): Promise<boolean> {
+        try {
+            if (await this.getAssetFromContract(contractAddress)) {
+                return true;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return false;
+    }
 
     /**
      * Creates a new asset with the specified asset code, asset issuer, and limit.

@@ -150,10 +150,7 @@ export const submitTx = async (
 export class TransactionResponse {
     static contractId = (gtr: SorobanRpc.Api.GetTransactionResponse): string => {
         if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
-            // const buff = Buffer.from(gtr.resultMetaXdr, "base64");
-            const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
-            const txMeta = xdr.TransactionMeta.fromXDR(buff);
-            return txMeta.v3().sorobanMeta()?.returnValue().address().contractId().toString("hex") || "";
+            return gtr.returnValue?.address()?.contractId().toString("hex") || "";
         }
 
         return "";
@@ -161,10 +158,7 @@ export class TransactionResponse {
 
     static wasmId = (gtr: SorobanRpc.Api.GetTransactionResponse): string => {
         if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
-            const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
-            const txMeta = xdr.TransactionMeta.fromXDR(buff);
-            // const txMeta = xdr.TransactionMeta.fromXDR(getTXData.resultMetaXdr, "base64");
-            return txMeta.v3().sorobanMeta()?.returnValue().bytes().toString("hex") || "";
+            return gtr.returnValue?.bytes()?.toString("hex") || "";
         }
 
         return ""
@@ -172,10 +166,7 @@ export class TransactionResponse {
 
     static scVal = (gtr: SorobanRpc.Api.GetTransactionResponse): xdr.ScVal => {
         if (gtr.status == SorobanRpc.Api.GetTransactionStatus.SUCCESS && gtr.resultMetaXdr) {
-            const buff = Buffer.from(gtr.resultMetaXdr.toXDR("base64"), "base64");
-            const txMeta = xdr.TransactionMeta.fromXDR(buff);
-            const result = txMeta.v3().sorobanMeta()?.returnValue() || xdr.ScVal.scvBool(true);
-            return result;
+            return gtr.returnValue || xdr.ScVal.scvVoid();
         }
 
         return xdr.ScVal.scvVoid();

@@ -66,7 +66,7 @@ export class ContractSDK extends Soroban {
             return Promise.reject("Transaction signing failed");
         }
         const reciept = await submitTx(ret.tx, this.server, this.selectedNetwork);
-        const payload = TransactionResponse.contractId(reciept);    // WasmID
+        const payload = TransactionResponse.wasmId(reciept);    // WasmID
 
         return { reciept, payload };
     }

@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
+import { ExplorerService } from "lib/explorer/explorer-service";
 import { Address, Asset, Contract, StrKey, nativeToScVal, xdr } from "stellar-sdk";
-import { ExplorerService } from "../explorer";
 
 /**
  * Converts an account address to a Smart Contract Value (ScVal).
@@ -137,14 +137,13 @@ export const getAsset = async (contractAddress: string): Promise<Asset | null> =
         const contractId = getContractHash(contractAddress);
         // TODO: Create own implementation and hopefully remove dependency on explorer
         const data = await ExplorerService.getContract(contractId);
-
-        // Wrapped assets do not have a contract code
-        if (data.asset_code && data.asset_issuer && !data.contract_code) {
+        if (data.asset_code && data.asset_issuer && data.asset_address) {
             return new Asset(data.asset_code, data.asset_issuer);
         }
     } catch (e) {
         console.error(e);
     }
+
     return null;
 }
 
